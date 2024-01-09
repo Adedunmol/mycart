@@ -2,8 +2,11 @@ package app
 
 import (
 	"log"
+	"net/http"
 
 	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/httplog/v2"
 )
 
 func Initializers() database.DbInstance {
@@ -16,7 +19,13 @@ func Initializers() database.DbInstance {
 	return db
 }
 
-func Run() {
+func Run(logger *httplog.Logger) {
 
 	Initializers()
+
+	r := chi.NewRouter()
+
+	r.Use(httplog.RequestLogger(logger))
+
+	http.ListenAndServe("127.0.0.1:5000", r)
 }
