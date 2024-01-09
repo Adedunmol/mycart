@@ -5,6 +5,7 @@ import (
 	"net/http"
 
 	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/Adedunmol/mycart/internal/routes"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httplog/v2"
 )
@@ -24,6 +25,8 @@ func Run(logger *httplog.Logger) {
 	Initializers()
 
 	r := chi.NewRouter()
+
+	routes.SetupRoutes(r)
 
 	r.Use(httplog.RequestLogger(logger))
 
