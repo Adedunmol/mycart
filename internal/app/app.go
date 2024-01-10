@@ -31,10 +31,10 @@ func Run(logger *httplog.Logger) {
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 
-		util.RespondWithJSON(w, http.StatusOK, "")
+		util.RespondWithJSON(w, http.StatusOK, "Hello, world")
 	})
 
 	routes.SetupRoutes(r)
 
-	http.ListenAndServe("127.0.0.1:5000", r)
+	http.ListenAndServe(":5000", r)
 }
