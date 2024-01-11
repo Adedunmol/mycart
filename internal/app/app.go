@@ -1,17 +1,37 @@
 package app
 
 import (
+	"fmt"
+	"log"
 	"net/http"
 
+	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/routes"
 	"github.com/Adedunmol/mycart/internal/util"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/httplog/v2"
 )
 
+func Initializers() database.DbInstance {
+	_, err := util.LoadConfig("../..")
+	if err != nil {
+		log.Fatal("Error loading .env file: ", err)
+	}
+
+	db, err := database.InitDB()
+
+	if err != nil {
+		log.Panic(err)
+	}
+
+	return db
+}
+
 func Run(logger *httplog.Logger) {
 
-	// Initializers()
+	db := Initializers()
+
+	fmt.Println("db: ", db)
 
 	r := chi.NewRouter()
 

@@ -1,6 +1,7 @@
 package database
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -19,6 +20,7 @@ var Database DbInstance
 func InitDB() (DbInstance, error) {
 	var err error
 
+	fmt.Println(os.Getenv("DATABASE_URL"))
 	db, err := gorm.Open(postgres.Open(os.Getenv("DATABASE_URL")), &gorm.Config{})
 
 	if err != nil {
