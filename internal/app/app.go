@@ -12,24 +12,24 @@ import (
 	"github.com/go-chi/httplog/v2"
 )
 
-func Initializers() database.DbInstance {
-	_, err := util.LoadConfig("../..")
+func Initializers() (database.DbInstance, util.Config) {
+	config, err := util.LoadConfig("../..")
 	if err != nil {
 		log.Fatal("Error loading .env file: ", err)
 	}
 
-	db, err := database.InitDB()
+	db, err := database.InitDB(config)
 
 	if err != nil {
 		log.Panic(err)
 	}
 
-	return db
+	return db, config
 }
 
 func Run(logger *httplog.Logger) {
 
-	db := Initializers()
+	db, _ := Initializers()
 
 	fmt.Println("db: ", db)
 

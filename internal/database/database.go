@@ -1,10 +1,9 @@
 package database
 
 import (
-	"fmt"
 	"log"
-	"os"
 
+	"github.com/Adedunmol/mycart/internal/util"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -17,11 +16,10 @@ type DbInstance struct {
 
 var Database DbInstance
 
-func InitDB() (DbInstance, error) {
+func InitDB(config util.Config) (DbInstance, error) {
 	var err error
 
-	fmt.Println(os.Getenv("DATABASE_URL"))
-	db, err := gorm.Open(postgres.Open(os.Getenv("DATABASE_URL")), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(config.DatabaseUrl), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal("Error connecting to the db: ", err)

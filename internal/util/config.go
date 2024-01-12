@@ -6,29 +6,34 @@ import (
 	"github.com/spf13/viper"
 )
 
-var config *Config
+// var EnvConfig Config
 
 type Config struct {
 	DatabaseUrl string `mapstructure:"DATABASE_URL"`
 }
 
-func LoadConfig(path string) (*Config, error) {
+func LoadConfig(path string) (Config, error) {
+	var envConfig Config
 
 	viper.AddConfigPath(path)
-	// viper.SetConfigType("env")
+	viper.SetConfigName("app")
+	viper.SetConfigType("env")
 
 	viper.AutomaticEnv()
 
 	err := viper.ReadInConfig()
 	if err != nil {
 		log.Fatal(err)
-		return config, err
+		return envConfig, err
 	}
 
-	err = viper.Unmarshal(&config)
+	// EnvConfig = Config{DatabaseUrl: "hey"}
+
+	err = viper.Unmarshal(&envConfig)
 	if err != nil {
-		return config, err
+		log.Fatal(err)
+		return envConfig, err
 	}
 
-	return config, nil
+	return envConfig, nil
 }
