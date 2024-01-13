@@ -3,6 +3,7 @@ package database
 import (
 	"log"
 
+	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/util"
 	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
@@ -27,7 +28,7 @@ func InitDB(config util.Config) (DbInstance, error) {
 	db.Logger = logger.Default.LogMode(logger.Info)
 
 	log.Println("Running migrations")
-	db.AutoMigrate()
+	db.AutoMigrate(&models.Role{}, &models.User{})
 
 	Database = DbInstance{DB: db}
 
