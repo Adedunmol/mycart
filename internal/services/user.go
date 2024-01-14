@@ -9,6 +9,7 @@ import (
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/util"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type CreateUserDto struct {

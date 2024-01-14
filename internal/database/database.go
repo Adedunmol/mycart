@@ -17,10 +17,10 @@ type DbInstance struct {
 
 var Database DbInstance
 
-func InitDB(config util.Config) (DbInstance, error) {
+func InitDB() (DbInstance, error) {
 	var err error
 
-	db, err := gorm.Open(postgres.Open(config.DatabaseUrl), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(util.EnvConfig.DatabaseUrl), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal("Error connecting to the db: ", err)

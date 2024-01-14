@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 
@@ -12,26 +11,28 @@ import (
 	"github.com/go-chi/httplog/v2"
 )
 
-func Initializers() (database.DbInstance, util.Config) {
-	config, err := util.LoadConfig("../..")
+func Initializers() database.DbInstance {
+	_, err := util.LoadConfig("../..")
 	if err != nil {
 		log.Fatal("Error loading .env file: ", err)
 	}
 
-	db, err := database.InitDB(config)
+	db, err := database.InitDB()
 
 	if err != nil {
 		log.Panic(err)
 	}
 
-	return db, config
+	database.InsertRoles()
+
+	return db
 }
 
 func Run(logger *httplog.Logger) {
 
-	db, _ := Initializers()
+	_ = Initializers()
 
-	fmt.Println("db: ", db)
+	// fmt.Println("db: ", db)
 
 	r := chi.NewRouter()
 
