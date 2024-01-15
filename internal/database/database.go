@@ -19,8 +19,13 @@ var Database DbInstance
 
 func InitDB() (DbInstance, error) {
 	var err error
+	var db *gorm.DB
 
-	db, err := gorm.Open(postgres.Open(util.EnvConfig.DatabaseUrl), &gorm.Config{})
+	if util.EnvConfig.Environment != "test" {
+		db, err = gorm.Open(postgres.Open(util.EnvConfig.DatabaseUrl), &gorm.Config{})
+	}
+
+	db, err = gorm.Open(postgres.Open(util.EnvConfig.TestDatabaseUrl), &gorm.Config{})
 
 	if err != nil {
 		log.Fatal("Error connecting to the db: ", err)

@@ -9,8 +9,9 @@ import (
 var EnvConfig Config
 
 type Config struct {
-	DatabaseUrl string `mapstructure:"DATABASE_URL"`
-	Environment string `mapstructure:"ENVIRONMENT"`
+	DatabaseUrl     string `mapstructure:"DATABASE_URL"`
+	TestDatabaseUrl string `mapstructure:"DATABASE_URL_TEST"`
+	Environment     string `mapstructure:"ENVIRONMENT"`
 }
 
 func LoadConfig(path string) (Config, error) {

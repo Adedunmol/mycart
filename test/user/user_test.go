@@ -18,6 +18,7 @@ func TestMain(m *testing.M) {
 
 	code := m.Run()
 
+	// drop table(s) here
 	os.Exit(code)
 }
 
