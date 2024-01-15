@@ -25,9 +25,13 @@ func InitDB() (DbInstance, error) {
 	if err != nil {
 		log.Fatal("Error connecting to the db: ", err)
 	}
-	db.Logger = logger.Default.LogMode(logger.Info)
 
-	log.Println("Running migrations")
+	if util.EnvConfig.Environment != "test" {
+		db.Logger = logger.Default.LogMode(logger.Info)
+
+		log.Println("Running migrations")
+	}
+
 	db.AutoMigrate(&models.Role{}, &models.User{})
 
 	Database = DbInstance{DB: db}

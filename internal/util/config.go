@@ -10,6 +10,7 @@ var EnvConfig Config
 
 type Config struct {
 	DatabaseUrl string `mapstructure:"DATABASE_URL"`
+	Environment string `mapstructure:"ENVIRONMENT"`
 }
 
 func LoadConfig(path string) (Config, error) {

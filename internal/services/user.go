@@ -90,4 +90,5 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: user, Status: "success"})
+	return
 }

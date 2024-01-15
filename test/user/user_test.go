@@ -5,11 +5,24 @@ import (
 	"encoding/json"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
+
+	"github.com/Adedunmol/mycart/internal/app"
+	"github.com/Adedunmol/mycart/internal/services"
 )
 
+func TestMain(m *testing.M) {
+
+	_ = app.Initializers()
+
+	code := m.Run()
+
+	os.Exit(code)
+}
+
 func TestCreateUserHandler(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(CreateUserHandler))
+	server := httptest.NewServer(http.HandlerFunc(services.CreateUserHandler))
 
 	body := map[string]string{
 		"first_name": "test",
