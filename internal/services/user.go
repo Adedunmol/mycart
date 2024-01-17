@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"net/http"
 	"strings"
+	"time"
 
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/models"
@@ -18,6 +19,11 @@ type CreateUserDto struct {
 	Email     string `json:"email"`
 	Username  string `json:"username"`
 	Password  string `json:"password"`
+}
+
+type UserLoginDto struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
 }
 
 type APIResponse struct {
@@ -91,4 +97,58 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: user, Status: "success"})
 	return
+}
+
+func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
+	var userDto UserLoginDto
+
+	type Response struct {
+		Token      string        `json:"token"`
+		Expiration time.Duration `json:"expiration"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&userDto)
+
+	if _, ok := err.(*json.InvalidUnmarshalError); ok {
+		util.RespondWithJSON(w, http.StatusInternalServerError, "Unable to format the request body")
+		return
+	}
+
+	if err != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if userDto.Email == "" && userDto.Password == "" {
+		util.RespondWithJSON(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	var foundUser models.User
+
+	result := database.Database.DB.Where(models.User{Email: userDto.Email}).First(&foundUser)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(userDto.Password))
+
+	if err != nil {
+		util.RespondWithJSON(w, http.StatusUnauthorized, APIResponse{Message: "Invalid credentials", Data: nil, Status: "error"})
+		return
+	}
+
+	token, err := util.GenerateToken(foundUser.Username)
+
+	if err != nil {
+		fmt.Println(err)
+		util.RespondWithJSON(w, http.StatusInternalServerError, "Unable to generate token")
+		return
+	}
+
+	data := Response{Token: token, Expiration: time.Duration(util.TOKEN_EXPIRATION.Seconds())}
+
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: data, Status: "success"})
 }

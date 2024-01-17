@@ -3,7 +3,6 @@ package services
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -19,9 +18,7 @@ func TestMain(m *testing.M) {
 
 	_ = app.Initializers()
 
-	fmt.Println("running before")
 	code := m.Run()
-	fmt.Println("running after")
 
 	// drop table(s) here
 	database.Database.DB.Migrator().DropTable(&models.User{}, &models.Role{})
@@ -89,18 +86,14 @@ func TestCreateUserHandlerReturns409(t *testing.T) {
 	}
 }
 
-func TestCreateUserHandlerReturns400(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.CreateUserHandler))
+func TestLoginUserHandlerReturns400(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
 
 	body := map[string]string{}
 
 	postBody, _ := json.Marshal(body)
 
-	fmt.Println("body: ", string(postBody))
-
 	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	fmt.Println(resp.Body)
 
 	if err != nil {
 		t.Error(err)
@@ -108,5 +101,47 @@ func TestCreateUserHandlerReturns400(t *testing.T) {
 
 	if resp.StatusCode != http.StatusBadRequest {
 		t.Errorf("expected 400, but got %d", resp.StatusCode)
+	}
+}
+
+func TestLoginUserHandlerReturns401(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusUnauthorized {
+		t.Errorf("expected 401, but got %d", resp.StatusCode)
+	}
+}
+
+func TestLoginUserHandlerReturns200(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected 200, but got %d", resp.StatusCode)
 	}
 }
