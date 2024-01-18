@@ -7,14 +7,15 @@ import (
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
-const TOKEN_EXPIRATION = 15 * time.Minute
+const ACCESS_TOKEN_EXPIRATION = 15 * time.Minute
+const REFRESH_TOKEN_EXPIRATION = 1 * time.Hour
 
-func GenerateToken(username string) (string, error) {
+func GenerateToken(username string, expiration time.Duration) (string, error) {
 
 	claims := jwt.MapClaims{
-		"username":   username,
-		"Expiration": time.Now().Add(TOKEN_EXPIRATION).Unix(),
-		"IssuedAt":   time.Now().Unix(),
+		"username": username,
+		"exp":      time.Now().Add(expiration),
+		"IssuedAt": time.Now(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)

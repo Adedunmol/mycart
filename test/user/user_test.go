@@ -144,4 +144,8 @@ func TestLoginUserHandlerReturns200(t *testing.T) {
 	if resp.StatusCode != http.StatusOK {
 		t.Errorf("expected 200, but got %d", resp.StatusCode)
 	}
+
+	if len(resp.Cookies()) == 0 {
+		t.Error("expected a cookie to be set")
+	}
 }

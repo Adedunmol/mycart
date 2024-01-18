@@ -140,7 +140,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	token, err := util.GenerateToken(foundUser.Username)
+	accessToken, err := util.GenerateToken(foundUser.Username, util.ACCESS_TOKEN_EXPIRATION)
 
 	if err != nil {
 		fmt.Println(err)
@@ -148,7 +148,25 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	data := Response{Token: token, Expiration: time.Duration(util.TOKEN_EXPIRATION.Seconds())}
+	refreshToken, err := util.GenerateToken(foundUser.Username, util.REFRESH_TOKEN_EXPIRATION)
 
+	if err != nil {
+		fmt.Println(err)
+		util.RespondWithJSON(w, http.StatusInternalServerError, "Unable to generate token")
+		return
+	}
+
+	cookie := http.Cookie{
+		Name:     "token",
+		Value:    refreshToken,
+		Expires:  time.Now().Add(util.REFRESH_TOKEN_EXPIRATION),
+		HttpOnly: true,
+	}
+
+	result = database.Database.DB.Model(&foundUser).UpdateColumn("RefreshToken", refreshToken)
+
+	data := Response{Token: accessToken, Expiration: time.Duration(util.ACCESS_TOKEN_EXPIRATION.Seconds())}
+
+	http.SetCookie(w, &cookie)
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: data, Status: "success"})
 }
