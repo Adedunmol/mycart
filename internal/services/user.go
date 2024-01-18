@@ -170,3 +170,23 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &cookie)
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: data, Status: "success"})
 }
+
+func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
+	token, err := r.Cookie("token")
+
+	if err != nil {
+		util.RespondWithJSON(w, http.StatusForbidden, "Unable to access token from cookie")
+		return
+	}
+
+	var foundUser models.User
+
+	result := database.Database.DB.Where(models.User{RefreshToken: token.Value}).First(&foundUser)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusForbidden, APIResponse{Message: "user with token does not exist", Data: nil, Status: "error"})
+		return
+	}
+
+	// validate token
+}
