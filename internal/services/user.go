@@ -214,3 +214,36 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: data, Status: "success"})
 }
+
+func LogoutHandler(w http.ResponseWriter, r *http.Request) {
+	token, err := r.Cookie("token")
+
+	if err != nil {
+		util.RespondWithJSON(w, http.StatusNoContent, "")
+		return
+	}
+
+	cookie := http.Cookie{
+		Name:  "token",
+		Value: "",
+		// Expires:  time.Now().Add(util.REFRESH_TOKEN_EXPIRATION),
+		HttpOnly: true,
+		MaxAge:   -1,
+	}
+
+	var foundUser models.User
+
+	result := database.Database.DB.Where(models.User{RefreshToken: token.Value}).First(&foundUser)
+
+	if result.Error != nil {
+		http.SetCookie(w, &cookie)
+		util.RespondWithJSON(w, http.StatusNoContent, "")
+		return
+	}
+
+	result = database.Database.DB.Model(&foundUser).UpdateColumn("RefreshToken", "")
+
+	http.SetCookie(w, &cookie)
+
+	util.RespondWithJSON(w, http.StatusNoContent, "")
+}

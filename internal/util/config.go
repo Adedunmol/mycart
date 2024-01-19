@@ -30,8 +30,6 @@ func LoadConfig(path string) (Config, error) {
 		return EnvConfig, err
 	}
 
-	// EnvConfig = Config{DatabaseUrl: "hey"}
-
 	err = viper.Unmarshal(&EnvConfig)
 	if err != nil {
 		log.Fatal(err)
