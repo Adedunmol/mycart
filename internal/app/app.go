@@ -4,6 +4,7 @@ import (
 	"log"
 	"net/http"
 
+	"github.com/Adedunmol/mycart/internal/config"
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/routes"
 	"github.com/Adedunmol/mycart/internal/util"
@@ -12,7 +13,7 @@ import (
 )
 
 func Initializers() database.DbInstance {
-	_, err := util.LoadConfig("../..")
+	_, err := config.LoadConfig("../..")
 	if err != nil {
 		log.Fatal("Error loading .env file: ", err)
 	}

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Adedunmol/mycart/internal/config"
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
@@ -19,7 +20,7 @@ func GenerateToken(username string, expiration time.Duration) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString([]byte(EnvConfig.SecretKey))
+	tokenString, err := token.SignedString([]byte(config.EnvConfig.SecretKey))
 	if err != nil {
 		return "", err
 	}
@@ -35,8 +36,8 @@ func DecodeToken(tokenString string) (string, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		fmt.Println(EnvConfig.SecretKey)
-		return []byte(EnvConfig.SecretKey), nil
+		fmt.Println(config.EnvConfig.SecretKey)
+		return []byte(config.EnvConfig.SecretKey), nil
 	})
 
 	if err != nil {
