@@ -12,6 +12,7 @@ type Config struct {
 	DatabaseUrl     string `mapstructure:"DATABASE_URL"`
 	TestDatabaseUrl string `mapstructure:"DATABASE_URL_TEST"`
 	Environment     string `mapstructure:"ENVIRONMENT"`
+	SecretKey       string `mapstructure:"SECRET_KEY"`
 }
 
 func LoadConfig(path string) (Config, error) {

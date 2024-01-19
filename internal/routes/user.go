@@ -11,6 +11,7 @@ func UsersRoutes(r *chi.Mux) {
 
 	userRouter.Post("/register", services.CreateUserHandler)
 	userRouter.Post("/login", services.LoginUserHandler)
+	userRouter.Get("/refresh", services.RefreshTokenHandler)
 
 	r.Mount("/users", userRouter)
 }

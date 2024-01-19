@@ -157,10 +157,11 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cookie := http.Cookie{
-		Name:     "token",
-		Value:    refreshToken,
-		Expires:  time.Now().Add(util.REFRESH_TOKEN_EXPIRATION),
+		Name:  "token",
+		Value: refreshToken,
+		// Expires:  time.Now().Add(util.REFRESH_TOKEN_EXPIRATION),
 		HttpOnly: true,
+		MaxAge:   1 * 60 * 60,
 	}
 
 	result = database.Database.DB.Model(&foundUser).UpdateColumn("RefreshToken", refreshToken)
@@ -172,6 +173,11 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
+	type Response struct {
+		Token      string        `json:"token"`
+		Expiration time.Duration `json:"expiration"`
+	}
+
 	token, err := r.Cookie("token")
 
 	if err != nil {
@@ -189,4 +195,22 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// validate token
+	username, err := util.DecodeToken(token.Value)
+
+	if err != nil || username != foundUser.Username {
+		util.RespondWithJSON(w, http.StatusUnauthorized, APIResponse{Message: "bad token", Data: nil, Status: "error"})
+		return
+	}
+
+	accessToken, err := util.GenerateToken(foundUser.Username, util.ACCESS_TOKEN_EXPIRATION)
+
+	if err != nil {
+		fmt.Println(err)
+		util.RespondWithJSON(w, http.StatusInternalServerError, "Unable to generate token")
+		return
+	}
+
+	data := Response{Token: accessToken, Expiration: time.Duration(util.ACCESS_TOKEN_EXPIRATION.Seconds())}
+
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: data, Status: "success"})
 }
