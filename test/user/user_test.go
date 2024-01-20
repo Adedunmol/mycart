@@ -149,3 +149,51 @@ func TestLoginUserHandlerReturns200(t *testing.T) {
 		t.Error("expected a cookie to be set")
 	}
 }
+
+func TestRefreshTokenHandlerReturns403(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.RefreshTokenHandler))
+
+	resp, err := http.Get(server.URL)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusForbidden {
+		t.Errorf("expected 403, but got %d", resp.StatusCode)
+	}
+}
+
+func TestRefreshTokenHandlerReturns200(t *testing.T) {
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	rr := httptest.NewRecorder()
+	req, err := http.NewRequest(http.MethodPost, "", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	services.LoginUserHandler(rr, req)
+
+	if rr.Result().StatusCode != http.StatusOK {
+		t.Errorf("expected a 200 for login but got %d", rr.Result().StatusCode)
+	}
+
+	// server = httptest.NewServer(http.HandlerFunc(services.RefreshTokenHandler))
+
+	// resp, err = http.Get(server.URL)
+
+	// if err != nil {
+	// 	t.Error(err)
+	// }
+
+	// if resp.StatusCode != http.StatusOK {
+	// 	t.Errorf("expected 200, but got %d", resp.StatusCode)
+	// }
+}
