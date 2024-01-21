@@ -185,15 +185,22 @@ func TestRefreshTokenHandlerReturns200(t *testing.T) {
 		t.Errorf("expected a 200 for login but got %d", rr.Result().StatusCode)
 	}
 
-	// server = httptest.NewServer(http.HandlerFunc(services.RefreshTokenHandler))
+	var token string
 
-	// resp, err = http.Get(server.URL)
+	for _, c := range rr.Result().Cookies() {
+		if c.Name == "token" {
+			token = c.Value
+		}
+	}
 
-	// if err != nil {
-	// 	t.Error(err)
-	// }
+	cookie := &http.Cookie{Name: "token", Value: token}
 
-	// if resp.StatusCode != http.StatusOK {
-	// 	t.Errorf("expected 200, but got %d", resp.StatusCode)
-	// }
+	req, err = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
+	req.AddCookie(cookie)
+
+	services.RefreshTokenHandler(rr, req)
+
+	if rr.Result().StatusCode != http.StatusOK {
+		t.Errorf("expected a 200 for login but got %d", rr.Result().StatusCode)
+	}
 }
