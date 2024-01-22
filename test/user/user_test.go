@@ -204,3 +204,58 @@ func TestRefreshTokenHandlerReturns200(t *testing.T) {
 		t.Errorf("expected a 200 for login but got %d", rr.Result().StatusCode)
 	}
 }
+
+func TestLogoutHandlerWithoutCookieReturns204(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LogoutHandler))
+
+	resp, err := http.Get(server.URL)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusNoContent {
+		t.Errorf("expected 204, but got %d", resp.StatusCode)
+	}
+}
+
+func TestLogoutHandlerWithCookieReturns204(t *testing.T) {
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	rr := httptest.NewRecorder()
+	req, err := http.NewRequest(http.MethodPost, "", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	services.LoginUserHandler(rr, req)
+
+	if rr.Result().StatusCode != http.StatusOK {
+		t.Errorf("expected a 200 for login but got %d", rr.Result().StatusCode)
+	}
+
+	var token string
+
+	for _, c := range rr.Result().Cookies() {
+		if c.Name == "token" {
+			token = c.Value
+		}
+	}
+
+	cookie := &http.Cookie{Name: "token", Value: token}
+
+	req, err = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
+	req.AddCookie(cookie)
+
+	services.LogoutHandler(rr, req)
+
+	if rr.Result().StatusCode != http.StatusOK {
+		t.Errorf("expected a 204, but got %d", rr.Result().StatusCode)
+	}
+}

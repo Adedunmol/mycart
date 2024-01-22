@@ -36,7 +36,6 @@ func DecodeToken(tokenString string) (string, error) {
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
 		}
-		fmt.Println(config.EnvConfig.SecretKey)
 		return []byte(config.EnvConfig.SecretKey), nil
 	})
 
