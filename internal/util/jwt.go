@@ -1,7 +1,10 @@
 package util
 
 import (
+	"context"
 	"fmt"
+	"net/http"
+	"strings"
 	"time"
 
 	"github.com/Adedunmol/mycart/internal/config"
@@ -49,4 +52,36 @@ func DecodeToken(tokenString string) (string, error) {
 	}
 
 	return "", err
+}
+
+func AuthMiddleware(handler http.Handler) http.Handler {
+
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+
+		authHeader := r.Header.Get("Authorization")
+
+		if authHeader == "" {
+			RespondWithJSON(w, http.StatusUnauthorized, "No auth token in the header")
+			return
+		}
+
+		tokenString := strings.Split(authHeader, " ")
+
+		if len(tokenString) != 2 {
+			RespondWithJSON(w, http.StatusUnauthorized, "Malformed token")
+			return
+		}
+
+		username, err := DecodeToken(tokenString[1])
+		if err != nil || username == "" {
+			RespondWithJSON(w, http.StatusUnauthorized, "Bad token or token is expired")
+			return
+		}
+
+		ctx := context.WithValue(r.Context(), "username", username)
+		newReq := r.WithContext(ctx)
+
+		handler.ServeHTTP(w, newReq)
+
+	})
 }
