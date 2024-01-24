@@ -10,5 +10,6 @@ type Product struct {
 	Details  string `json:"details"`
 	Price    int    `json:"price"`
 	Category string `json:"category"`
+	Vendor   uint
 	// review (rating, comment)
 }
