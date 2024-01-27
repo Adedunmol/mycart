@@ -8,6 +8,7 @@ import (
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/util"
+	"github.com/go-chi/chi/v5"
 )
 
 type CreateProductDto struct {
@@ -18,9 +19,9 @@ type CreateProductDto struct {
 	// Date     time.Time `json:"date"`
 }
 
-func CreateEventHandler(w http.ResponseWriter, r *http.Request) {
-	var eventDto CreateProductDto
-	err := json.NewDecoder(r.Body).Decode(&eventDto)
+func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
+	var productDto CreateProductDto
+	err := json.NewDecoder(r.Body).Decode(&productDto)
 
 	if _, ok := err.(*json.InvalidUnmarshalError); ok {
 		fmt.Println(err)
@@ -46,10 +47,10 @@ func CreateEventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	product := models.Product{
-		Name:     eventDto.Name,
-		Details:  eventDto.Details,
-		Price:    eventDto.Price,
-		Category: eventDto.Category,
+		Name:     productDto.Name,
+		Details:  productDto.Details,
+		Price:    productDto.Price,
+		Category: productDto.Category,
 		Vendor:   foundUser.ID,
 	}
 
@@ -62,4 +63,25 @@ func CreateEventHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: product, Status: "success"})
+}
+
+func GetProductHandler(w http.ResponseWriter, r *http.Request) {
+
+	id := chi.URLParam(r, "id")
+
+	if id == "" {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no product id sent in the url param", Data: nil, Status: "error"})
+		return
+	}
+
+	var product models.Product
+	result := database.Database.DB.First(&product, id)
+
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "product not found", Data: nil, Status: "success"})
+		return
+	}
+
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: product, Status: "success"})
 }
