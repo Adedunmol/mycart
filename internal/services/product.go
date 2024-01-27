@@ -37,6 +37,11 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	username := r.Context().Value("username")
 
+	if username == nil {
+		util.RespondWithJSON(w, http.StatusUnauthorized, "Not authorized")
+		return
+	}
+
 	var foundUser models.User
 
 	result := database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)

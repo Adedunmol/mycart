@@ -1,8 +1,9 @@
-package services
+package test
 
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -142,6 +143,7 @@ func TestLoginUserHandlerReturns200(t *testing.T) {
 	}
 
 	if resp.StatusCode != http.StatusOK {
+		fmt.Println(resp.Body)
 		t.Errorf("expected 200, but got %d", resp.StatusCode)
 	}
 
@@ -201,6 +203,7 @@ func TestRefreshTokenHandlerReturns200(t *testing.T) {
 	services.RefreshTokenHandler(rr, req)
 
 	if rr.Result().StatusCode != http.StatusOK {
+		fmt.Println(rr.Body)
 		t.Errorf("expected a 200 for login but got %d", rr.Result().StatusCode)
 	}
 }
