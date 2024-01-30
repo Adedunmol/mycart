@@ -10,6 +10,7 @@ import (
 	"net/http/httptest"
 	"os"
 	"testing"
+	"time"
 
 	"github.com/Adedunmol/mycart/internal/app"
 	"github.com/Adedunmol/mycart/internal/database"
@@ -18,9 +19,12 @@ import (
 )
 
 type APIResponse struct {
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
-	Status  string      `json:"status"`
+	Message string `json:"message"`
+	Data    struct {
+		Token      string        `json:"token"`
+		Expiration time.Duration `json:"expiration"`
+	}
+	Status string `json:"status"`
 }
 
 func TestMain(m *testing.M) {
@@ -103,4 +107,61 @@ func TestCreateProductHandlerReturns400(t *testing.T) {
 	}
 
 	fmt.Println(jsonResponse.Data)
+}
+
+func TestCreateProductHandlerReturns200(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	fmt.Println("token: ", response.Data.Token)
+
+	rr := httptest.NewRecorder()
+
+	productBody := map[string]interface{}{
+		"name":     "test",
+		"details":  "some random product",
+		"price":    10,
+		"category": "clothing",
+	}
+
+	postProductBody, err := json.Marshal(productBody)
+
+	req, err := http.NewRequest(http.MethodPost, "", bytes.NewBuffer(postProductBody))
+	rr.Header().Add("Authorization", response.Data.Token)
+
+	if err != nil {
+		fmt.Println(err)
+		t.Error(err)
+	}
+
+	services.CreateProductHandler(rr, req)
+
+	if rr.Result().StatusCode != http.StatusCreated {
+		t.Errorf("expected a 201 but got %d", rr.Result().StatusCode)
+	}
 }
