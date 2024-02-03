@@ -14,6 +14,7 @@ func ProductsRoutes(r *chi.Mux) {
 
 	productRouter.Use(util.AuthMiddleware)
 	productRouter.Post("/", services.CreateProductHandler)
+	productRouter.Get("/", services.GetAllProductsHandler)
 	productRouter.Get("/{id}", services.GetProductHandler)
 	productRouter.Delete("/{id}", services.DeleteProductHandler)
 	productRouter.Patch("/{id}", services.UpdateProductHandler)
