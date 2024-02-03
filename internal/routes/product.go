@@ -10,8 +10,9 @@ func ProductsRoutes(r *chi.Mux) {
 
 	productRouter := chi.NewRouter()
 
-	r.Use(util.AuthMiddleware)
+	// r.Use(util.AuthMiddleware)
 
+	productRouter.Use(util.AuthMiddleware)
 	productRouter.Post("/", services.CreateProductHandler)
 	productRouter.Get("/{id}", services.GetProductHandler)
 

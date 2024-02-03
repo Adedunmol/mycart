@@ -61,7 +61,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	if strings.Contains(roleToAssign, "users") {
 		result = database.Database.DB.Where(models.Role{Default: true}).First(&role)
 	} else {
-		result = database.Database.DB.Where(models.Role{Name: "Event-Organizer"}).First(&role)
+		result = database.Database.DB.Where(models.Role{Name: "Vendor"}).First(&role)
 	}
 
 	if result.Error != nil {
