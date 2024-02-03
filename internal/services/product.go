@@ -92,11 +92,11 @@ func GetProductHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func GetAllProductsHandler(w http.ResponseWriter, r *http.Request) {
-	var events []models.Product
+	var products []models.Product
 
-	database.Database.DB.Where("deleted_at is null").Find(&events)
+	database.Database.DB.Where("deleted_at is null").Find(&products)
 
-	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: events, Status: "success"})
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: products, Status: "success"})
 }
 
 func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
@@ -108,9 +108,9 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var event models.Product
+	var product models.Product
 
-	result := database.Database.DB.Where("deleted_at is null").First(&event, id)
+	result := database.Database.DB.Where("deleted_at is null").First(&product, id)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -118,7 +118,7 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result = database.Database.DB.Delete(&event)
+	result = database.Database.DB.Delete(&product)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -126,10 +126,10 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: event, Status: "success"})
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: product, Status: "success"})
 }
 
-func UpdateEventHandler(w http.ResponseWriter, r *http.Request) {
+func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	id := chi.URLParam(r, "id")
 
@@ -138,18 +138,18 @@ func UpdateEventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var event models.Product
+	var product models.Product
 
-	result := database.Database.DB.Where("deleted_at is null").First(&event, id)
+	result := database.Database.DB.Where("deleted_at is null").First(&product, id)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
-		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "event not found", Data: nil, Status: "success"})
+		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "product not found", Data: nil, Status: "success"})
 		return
 	}
 
-	var eventDto CreateProductDto
-	err := json.NewDecoder(r.Body).Decode(&eventDto)
+	var productDto CreateProductDto
+	err := json.NewDecoder(r.Body).Decode(&productDto)
 
 	if _, ok := err.(*json.InvalidUnmarshalError); ok {
 		fmt.Println(err)
@@ -163,18 +163,18 @@ func UpdateEventHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result = database.Database.DB.Model(&event).Updates(models.Product{
-		Name: eventDto.Name,
-
-		Price:    eventDto.Price,
-		Category: eventDto.Category,
+	result = database.Database.DB.Model(&product).Updates(models.Product{
+		Name:     productDto.Name,
+		Details:  product.Details,
+		Price:    productDto.Price,
+		Category: productDto.Category,
 	})
 
 	if result.Error != nil {
 		fmt.Println(err)
-		util.RespondWithJSON(w, http.StatusInternalServerError, "Error updating event")
+		util.RespondWithJSON(w, http.StatusInternalServerError, "Error updating product")
 		return
 	}
 
-	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: event, Status: "success"})
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: product, Status: "success"})
 }
