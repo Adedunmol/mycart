@@ -15,6 +15,7 @@ type CreateProductDto struct {
 	Name     string `json:"name"`
 	Details  string `json:"details"`
 	Price    int    `json:"price"`
+	Quantity int    `json:"quantity"`
 	Category string `json:"category"`
 	// Date     time.Time `json:"date"`
 }
@@ -56,6 +57,7 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 		Details:  productDto.Details,
 		Price:    productDto.Price,
 		Category: productDto.Category,
+		Quantity: uint(productDto.Quantity),
 		Vendor:   foundUser.ID,
 	}
 

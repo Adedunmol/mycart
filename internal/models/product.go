@@ -9,6 +9,7 @@ type Product struct {
 	Name      string `json:"name"`
 	Details   string `json:"details"`
 	Price     int    `json:"price"`
+	Quantity  uint   `json:"quantity"`
 	Category  string `json:"category"`
 	Vendor    uint
 	Purchases []Purchase `gorm:"foreignKey:ProductID"`
