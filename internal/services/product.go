@@ -120,6 +120,27 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	username := r.Context().Value("username")
+
+	if username == nil {
+		util.RespondWithJSON(w, http.StatusUnauthorized, "Not authorized")
+		return
+	}
+
+	var foundUser models.User
+
+	result = database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		return
+	}
+
+	if product.Vendor == foundUser.ID {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "not the owner of the product", Data: nil, Status: "error"})
+		return
+	}
+
 	result = database.Database.DB.Delete(&product)
 
 	if result.Error != nil {

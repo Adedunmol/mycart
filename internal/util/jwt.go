@@ -8,6 +8,8 @@ import (
 	"time"
 
 	"github.com/Adedunmol/mycart/internal/config"
+	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/Adedunmol/mycart/internal/models"
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
@@ -84,4 +86,34 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 		handler.ServeHTTP(w, newReq)
 
 	})
+}
+
+func RoleAuthorization(permissions ...uint8) func(handler http.Handler) http.Handler {
+
+	return func(handler http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			username := r.Context().Value("username")
+			var foundUser models.User
+
+			result := database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+
+			if result.Error != nil {
+				RespondWithJSON(w, http.StatusUnauthorized, "Unauthorized")
+				return
+			}
+
+			var role models.Role
+
+			result = database.Database.DB.First(&role, foundUser.RoleID)
+
+			for perm := range permissions {
+				if !role.HasPermission(uint8(perm)) {
+					RespondWithJSON(w, http.StatusForbidden, "Forbidden")
+					return
+				}
+			}
+
+			handler.ServeHTTP(w, r)
+		})
+	}
 }

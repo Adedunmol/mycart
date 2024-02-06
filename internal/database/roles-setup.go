@@ -8,21 +8,21 @@ import (
 )
 
 const (
-	USER         uint8 = 1
-	CREATE_EVENT uint8 = 2
-	MODIFY_EVENT uint8 = 4
-	DELETE_EVENT uint8 = 8
-	MODERATE     uint8 = 16
-	ADMIN        uint8 = 32
+	USER           uint8 = 1
+	CREATE_PRODUCT uint8 = 2
+	MODIFY_PRODUCT uint8 = 4
+	DELETE_PRODUCT uint8 = 8
+	MODERATE       uint8 = 16
+	ADMIN          uint8 = 32
 )
 
 func InsertRoles() {
 	roles := make(map[string][]uint8)
 
 	roles["User"] = []uint8{USER}
-	roles["Event-Organizer"] = []uint8{USER, CREATE_EVENT, MODIFY_EVENT, DELETE_EVENT}
-	roles["Moderator"] = []uint8{USER, CREATE_EVENT, MODIFY_EVENT, DELETE_EVENT, MODERATE}
-	roles["Admin"] = []uint8{USER, CREATE_EVENT, MODIFY_EVENT, DELETE_EVENT, MODERATE, ADMIN}
+	roles["Vendor"] = []uint8{USER, CREATE_PRODUCT, MODIFY_PRODUCT, DELETE_PRODUCT}
+	roles["Moderator"] = []uint8{USER, CREATE_PRODUCT, MODIFY_PRODUCT, DELETE_PRODUCT, MODERATE}
+	roles["Admin"] = []uint8{USER, CREATE_PRODUCT, MODIFY_PRODUCT, DELETE_PRODUCT, MODERATE, ADMIN}
 
 	default_role := "User"
 
