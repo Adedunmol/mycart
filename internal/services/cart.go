@@ -95,3 +95,58 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: cart, Status: "success"})
 }
+
+func RemoveFromCartHandler(w http.ResponseWriter, r *http.Request) {
+	productID := r.URL.Query().Get("product_id")
+
+	var cart models.Cart
+
+	if productID == "" {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no user id sent in the query param", Data: nil, Status: "error"})
+		return
+	}
+
+	username := r.Context().Value("username")
+
+	if username == nil {
+		util.RespondWithJSON(w, http.StatusUnauthorized, "Not authorized")
+		return
+	}
+
+	var foundUser models.User
+
+	result := database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		return
+	}
+
+	result = database.Database.DB.First(&cart, foundUser.ID)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not have a cart", Data: nil, Status: "error"})
+		return
+	}
+
+	newProductID, err := strconv.ParseUint(productID, 10, 8)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	for _, cartItem := range cart.CartItems {
+		if cartItem.ProductID == uint(newProductID) {
+
+			result = database.Database.DB.Delete(&cartItem)
+
+			if result.Error != nil {
+				fmt.Println(result.Error)
+				util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "error deleting product", Data: nil, Status: "error"})
+				return
+			}
+
+			util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: cartItem, Status: "success"})
+		}
+	}
+}
