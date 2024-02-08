@@ -6,15 +6,15 @@ import (
 
 type Cart struct {
 	gorm.Model
-	BuyerID    uint
-	TotalPrice uint
-	CartItems  []CartItem `gorm:"foreignKey:Cart"`
+	BuyerID    uint       `json:"buyer_id"`
+	TotalPrice uint       `json:"total_price"`
+	CartItems  []CartItem `gorm:"foreignKey:CartID"`
 }
 
 type CartItem struct {
 	gorm.Model
-	Cart       uint
-	ProductID  uint
-	Quantity   uint
-	TotalPrice uint
+	CartID     uint `json:"cart_id"`
+	ProductID  uint `json:"product_id"`
+	Quantity   uint `json:"quantity"`
+	TotalPrice uint `json:"total_price"`
 }

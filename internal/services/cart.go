@@ -44,6 +44,8 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 		cart = models.Cart{
 			BuyerID: foundUser.ID,
 		}
+
+		result = database.Database.DB.Create(&cart)
 	}
 
 	var product models.Product
@@ -67,7 +69,7 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cartItem := models.CartItem{
-		Cart:       cart.ID,
+		CartID:     cart.ID,
 		ProductID:  product.ID,
 		Quantity:   uint(newQuantity),
 		TotalPrice: uint(newQuantity) * uint(product.Price),
@@ -86,6 +88,8 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 	result = database.Database.DB.Model(&cart).Updates(models.Cart{
 		TotalPrice: newCartPrice,
 	})
+
+	result = database.Database.DB.Preload("CartItems").First(&cart, cart.ID)
 
 	if result.Error != nil {
 		fmt.Println(err)
