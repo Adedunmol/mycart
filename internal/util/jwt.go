@@ -106,7 +106,8 @@ func RoleAuthorization(permissions ...uint8) func(handler http.Handler) http.Han
 
 			result = database.Database.DB.First(&role, foundUser.RoleID)
 
-			for perm := range permissions {
+			for _, perm := range permissions {
+
 				if !role.HasPermission(uint8(perm)) {
 					RespondWithJSON(w, http.StatusForbidden, "Forbidden")
 					return
