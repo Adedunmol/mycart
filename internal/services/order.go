@@ -1,0 +1,80 @@
+package services
+
+import (
+	"fmt"
+	"net/http"
+
+	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/Adedunmol/mycart/internal/models"
+	"github.com/Adedunmol/mycart/internal/util"
+)
+
+func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
+	cartID := r.URL.Query().Get("cart_id")
+
+	var cart models.Cart
+
+	if cartID == "" {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no cart id sent in the query param", Data: nil, Status: "error"})
+		return
+	}
+
+	username := r.Context().Value("username")
+
+	if username == nil {
+		util.RespondWithJSON(w, http.StatusUnauthorized, "Not authorized")
+		return
+	}
+
+	var foundUser models.User
+
+	result := database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		return
+	}
+
+	result = database.Database.DB.Preload("CartItems").First(&cart, cartID)
+
+	if len(cart.CartItems) < 1 {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "cart is empty", Data: nil, Status: "error"})
+	}
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "no cart found with this id", Data: nil, Status: "error"})
+		return
+	}
+
+	order := models.Order{
+		BuyerID: uint8(foundUser.ID),
+		CartID:  uint8(cart.ID),
+	}
+
+	result = database.Database.DB.Create(&order)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "unable to create order", Data: nil, Status: "error"})
+		return
+	}
+
+	for _, product := range cart.CartItems {
+		var foundProduct models.Product
+		result = database.Database.DB.First(&foundProduct, product.ID)
+
+		newQuantity := foundProduct.Quantity - product.Quantity // (quantity in store - quantity bought)
+
+		result = database.Database.DB.Model(&product).Updates(models.Product{
+			Quantity: newQuantity,
+		})
+
+		if result.Error != nil {
+			fmt.Println(result.Error)
+			util.RespondWithJSON(w, http.StatusInternalServerError, "Error updating product")
+			return
+		}
+	}
+
+	// generate receipt
+	// pdfPath, err := util.GeneratePdf(cart, foundUser, "")
+}

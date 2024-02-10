@@ -13,8 +13,9 @@ type Cart struct {
 
 type CartItem struct {
 	gorm.Model
-	CartID     uint `json:"cart_id"`
-	ProductID  uint `json:"product_id"`
-	Quantity   uint `json:"quantity"`
-	TotalPrice uint `json:"total_price"`
+	CartID      uint   `json:"cart_id"`
+	ProductID   uint   `json:"product_id"`
+	ProductName string `json:"product_name"`
+	Quantity    uint   `json:"quantity"`
+	TotalPrice  uint   `json:"total_price"`
 }

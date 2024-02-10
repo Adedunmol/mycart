@@ -18,7 +18,7 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 	var cart models.Cart
 
 	if productID == "" {
-		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no user id sent in the query param", Data: nil, Status: "error"})
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no product id sent in the query param", Data: nil, Status: "error"})
 		return
 	}
 
@@ -69,10 +69,11 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	cartItem := models.CartItem{
-		CartID:     cart.ID,
-		ProductID:  product.ID,
-		Quantity:   uint(newQuantity),
-		TotalPrice: uint(newQuantity) * uint(product.Price),
+		CartID:      cart.ID,
+		ProductName: product.Name,
+		ProductID:   product.ID,
+		Quantity:    uint(newQuantity),
+		TotalPrice:  uint(newQuantity) * uint(product.Price),
 	}
 
 	result = database.Database.DB.Create(&cartItem)
@@ -92,7 +93,7 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 	result = database.Database.DB.Preload("CartItems").First(&cart, cart.ID)
 
 	if result.Error != nil {
-		fmt.Println(err)
+		fmt.Println(result.Error)
 		util.RespondWithJSON(w, http.StatusInternalServerError, "Error updating cart")
 		return
 	}

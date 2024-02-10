@@ -4,8 +4,8 @@ import (
 	"gorm.io/gorm"
 )
 
-type Purchase struct {
+type Order struct {
 	gorm.Model
-	BuyerID   uint8
-	ProductID uint8
+	BuyerID uint8
+	CartID  uint8
 }

@@ -13,11 +13,11 @@ import (
 )
 
 // func GeneratePdf(product models.product, user models.User, fileStr *string, mux *sync.Mutex, wg *sync.WaitGroup) (string, error) {
-func GeneratePdf(product models.Product, user models.User, fileStr *string) (string, error) {
+func GeneratePdf(cart models.Cart, user models.User, fileStr *string) (string, error) {
 
-	var organizer models.User
+	var foundUser models.User
 
-	result := database.Database.DB.First(&organizer, product.Vendor)
+	result := database.Database.DB.First(&foundUser, user.ID)
 
 	if result.Error != nil {
 		return "", errors.New("no user found with this id")
@@ -29,19 +29,19 @@ func GeneratePdf(product models.Product, user models.User, fileStr *string) (str
 	})
 
 	doc.SetHeader(&generator.HeaderFooter{
-		Text:       "<center>Receipt from Eve",
+		Text:       "<center>Receipt from mycart",
 		Pagination: true,
 	})
 
 	doc.SetFooter(&generator.HeaderFooter{
-		Text:       "<center>Receipt from Eve",
+		Text:       "<center>Receipt from mycart",
 		Pagination: true,
 	})
 
 	doc.SetRef("random")
 	doc.SetVersion("1.0")
 
-	doc.SetDescription(fmt.Sprintf("An invoice for the purchase %s", product.Name))
+	doc.SetDescription(fmt.Sprintf("A description"))
 	doc.SetDate(fmt.Sprintf("%d/%d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()))
 
 	doc.SetCompany(&generator.Contact{
@@ -66,17 +66,19 @@ func GeneratePdf(product models.Product, user models.User, fileStr *string) (str
 		},
 	})
 
-	doc.AppendItem(&generator.Item{
-		Name:     product.Name,
-		UnitCost: fmt.Sprintf("%d", product.Price),
-		Quantity: fmt.Sprintf("%d", 0),
-		Tax: &generator.Tax{
-			Amount: "0",
-		},
-		Discount: &generator.Discount{
-			Percent: "0",
-		},
-	})
+	for _, cartItem := range cart.CartItems {
+		doc.AppendItem(&generator.Item{
+			Name:     cartItem.ProductName,
+			UnitCost: fmt.Sprintf("%d", cartItem),
+			Quantity: fmt.Sprintf("%d", cartItem.Quantity),
+			Tax: &generator.Tax{
+				Amount: "0",
+			},
+			Discount: &generator.Discount{
+				Percent: "0",
+			},
+		})
+	}
 
 	pdf, err := doc.Build()
 	if err != nil {
