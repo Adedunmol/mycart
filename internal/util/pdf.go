@@ -2,6 +2,9 @@ package util
 
 import (
 	"errors"
+	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/models"
@@ -13,7 +16,7 @@ import (
 )
 
 // func GeneratePdf(product models.product, user models.User, fileStr *string, mux *sync.Mutex, wg *sync.WaitGroup) (string, error) {
-func GeneratePdf(cart models.Cart, user models.User, fileStr *string) (string, error) {
+func GeneratePdf(cart models.Cart, user models.User) (string, error) {
 
 	var foundUser models.User
 
@@ -45,7 +48,7 @@ func GeneratePdf(cart models.Cart, user models.User, fileStr *string) (string, e
 	doc.SetDate(fmt.Sprintf("%d/%d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()))
 
 	doc.SetCompany(&generator.Contact{
-		Name: organizer.Username,
+		Name: "mycart",
 		Address: &generator.Address{
 			Address:    "123 test str",
 			Address2:   "Apartment 2",
@@ -56,7 +59,7 @@ func GeneratePdf(cart models.Cart, user models.User, fileStr *string) (string, e
 	})
 
 	doc.SetCustomer(&generator.Contact{
-		Name: organizer.Username,
+		Name: foundUser.Username,
 		Address: &generator.Address{
 			Address:    "123 test str",
 			Address2:   "Apartment 2",
@@ -69,7 +72,7 @@ func GeneratePdf(cart models.Cart, user models.User, fileStr *string) (string, e
 	for _, cartItem := range cart.CartItems {
 		doc.AppendItem(&generator.Item{
 			Name:     cartItem.ProductName,
-			UnitCost: fmt.Sprintf("%d", cartItem),
+			UnitCost: fmt.Sprintf("%d", cartItem.UnitPrice),
 			Quantity: fmt.Sprintf("%d", cartItem.Quantity),
 			Tax: &generator.Tax{
 				Amount: "0",
@@ -85,12 +88,20 @@ func GeneratePdf(cart models.Cart, user models.User, fileStr *string) (string, e
 		return "", err
 	}
 
-	*fileStr = fmt.Sprintf("%s.pdf", user.Username)
-	err = pdf.OutputFileAndClose(*fileStr)
+	currentDir, err := os.Getwd()
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	userInvoice := fmt.Sprintf("%s.pdf", user.Username)
+	filePath := filepath.Join(currentDir, "..", "..", "internal", "order_invoices", userInvoice)
+
+	err = pdf.OutputFileAndClose(filePath)
 
 	if err != nil {
 		return "", err
 	}
 
-	return *fileStr, nil
+	return filePath, nil
 }

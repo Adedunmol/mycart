@@ -76,5 +76,13 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// generate receipt
-	// pdfPath, err := util.GeneratePdf(cart, foundUser, "")
+	_, err := util.GeneratePdf(cart, foundUser)
+
+	if err != nil {
+		fmt.Println(err)
+		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "unable to generate invoice", Data: nil, Status: "error"})
+		return
+	}
+
+	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: order, Status: "success"})
 }

@@ -15,6 +15,16 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 	productID := r.URL.Query().Get("product_id")
 	quantity := r.URL.Query().Get("quantity")
 
+	newQuantity, err := strconv.ParseUint(quantity, 10, 8)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	if int(newQuantity) < 1 {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "quantity can't be less than 1", Data: nil, Status: "error"})
+	}
+
 	var cart models.Cart
 
 	if productID == "" {
@@ -57,12 +67,6 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	newQuantity, err := strconv.ParseUint(quantity, 10, 8)
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
 	if newQuantity > uint64(product.Quantity) {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "product quantity more than what's available", Data: nil, Status: "error"})
 		return
@@ -72,6 +76,7 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 		CartID:      cart.ID,
 		ProductName: product.Name,
 		ProductID:   product.ID,
+		UnitPrice:   uint(product.Price),
 		Quantity:    uint(newQuantity),
 		TotalPrice:  uint(newQuantity) * uint(product.Price),
 	}
@@ -134,6 +139,10 @@ func RemoveFromCartHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	if len(cart.CartItems) < 1 {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "cart is empty", Data: nil, Status: "error"})
+	}
+
 	newProductID, err := strconv.ParseUint(productID, 10, 8)
 
 	if err != nil {
@@ -154,4 +163,6 @@ func RemoveFromCartHandler(w http.ResponseWriter, r *http.Request) {
 			util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: cartItem, Status: "success"})
 		}
 	}
+
+	util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "", Data: nil, Status: "error"})
 }
