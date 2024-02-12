@@ -37,7 +37,7 @@ func InitDB() (DbInstance, error) {
 		log.Println("Running migrations")
 	}
 
-	db.AutoMigrate(&models.Role{}, &models.User{}, &models.Product{}, &models.Cart{}, &models.CartItem{}, &models.Order{})
+	db.AutoMigrate(&models.Role{}, &models.User{}, &models.Product{}, &models.Cart{}, &models.CartItem{}, &models.Order{}, &models.Review{})
 
 	Database = DbInstance{DB: db}
 

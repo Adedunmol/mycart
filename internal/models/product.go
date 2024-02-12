@@ -13,5 +13,6 @@ type Product struct {
 	Category  string `json:"category"`
 	Vendor    uint
 	CartItems []CartItem `gorm:"foreignKey:ProductID"`
+	Reviews   []Review   `gorm:"foreignKey:ProductID"`
 	// review (rating, comment)
 }

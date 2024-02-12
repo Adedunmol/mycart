@@ -10,26 +10,32 @@ import (
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/util"
+	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type CreateUserDto struct {
-	FirstName string `json:"first_name"`
-	LastName  string `json:"last_name"`
-	Email     string `json:"email"`
-	Username  string `json:"username"`
-	Password  string `json:"password"`
+	FirstName string `json:"first_name" validate:"required"`
+	LastName  string `json:"last_name" validate:"required"`
+	Email     string `json:"email" validate:"required,email"`
+	Username  string `json:"username" validate:"required"`
+	Password  string `json:"password" validate:"required"`
 }
 
 type UserLoginDto struct {
-	Email    string `json:"email"`
-	Password string `json:"password"`
+	Email    string `json:"email" validate:"required,email"`
+	Password string `json:"password" validate:"required"`
 }
 
 type APIResponse struct {
 	Message string      `json:"message"`
 	Data    interface{} `json:"data"`
 	Status  string      `json:"status"`
+}
+
+type ValidationErrors struct {
+	errors []struct {
+	}
 }
 
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -42,6 +48,20 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	if err != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if err := util.Validator.Struct(userDto); err != nil {
+
+		var fields string
+
+		for _, err := range err.(validator.ValidationErrors) {
+			fields += fmt.Sprintf("(%s: %s), ", err.Field(), err.ActualTag())
+		}
+
+		errMessage := fmt.Sprintf("Invalid request body. %s", fields)
+
+		util.RespondWithJSON(w, http.StatusUnprocessableEntity, APIResponse{Message: errMessage, Data: nil, Status: "error"})
 		return
 	}
 
