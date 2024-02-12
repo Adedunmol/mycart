@@ -28,14 +28,18 @@ type UserLoginDto struct {
 }
 
 type APIResponse struct {
-	Message string      `json:"message"`
+	Message interface{} `json:"message"`
 	Data    interface{} `json:"data"`
 	Status  string      `json:"status"`
 }
 
 type ValidationErrors struct {
-	errors []struct {
-	}
+	Errors []ValidationErrorItems `json:"errors"`
+}
+
+type ValidationErrorItems struct {
+	Field  string `json:"field"`
+	Detail string `json:"detail"`
 }
 
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -53,15 +57,16 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	if err := util.Validator.Struct(userDto); err != nil {
 
-		var fields string
+		validationErrors := ValidationErrors{}
 
 		for _, err := range err.(validator.ValidationErrors) {
-			fields += fmt.Sprintf("(%s: %s), ", err.Field(), err.ActualTag())
+
+			errorItem := ValidationErrorItems{Field: err.Field(), Detail: err.ActualTag()}
+
+			validationErrors.Errors = append(validationErrors.Errors, errorItem)
 		}
 
-		errMessage := fmt.Sprintf("Invalid request body. %s", fields)
-
-		util.RespondWithJSON(w, http.StatusUnprocessableEntity, APIResponse{Message: errMessage, Data: nil, Status: "error"})
+		util.RespondWithJSON(w, http.StatusUnprocessableEntity, APIResponse{Message: validationErrors, Data: nil, Status: "error"})
 		return
 	}
 
