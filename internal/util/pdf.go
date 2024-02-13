@@ -94,7 +94,8 @@ func GeneratePdf(cart models.Cart, user models.User) (string, error) {
 		log.Fatal(err)
 	}
 
-	userInvoice := fmt.Sprintf("%s.pdf", user.Username)
+	currentTime := time.Now()
+	userInvoice := fmt.Sprintf("%s-%s.pdf", user.Username, currentTime)
 	filePath := filepath.Join(currentDir, "..", "..", "internal", "order_invoices", userInvoice)
 
 	err = pdf.OutputFileAndClose(filePath)
