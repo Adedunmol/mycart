@@ -31,5 +31,8 @@ func ProductsRoutes(r *chi.Mux) {
 		r.Patch("/{id}", services.UpdateProductHandler)
 	})
 
+	productRouter.Post("/reviews/", services.CreateReviewHandler)
+	productRouter.Get("/reviews/{review_id}", services.GetReviewHandler)
+
 	r.Mount("/products", productRouter)
 }
