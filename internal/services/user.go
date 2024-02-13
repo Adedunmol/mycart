@@ -144,8 +144,18 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if userDto.Email == "" && userDto.Password == "" {
-		util.RespondWithJSON(w, http.StatusBadRequest, "Invalid request body")
+	if err := util.Validator.Struct(userDto); err != nil {
+
+		validationErrors := ValidationErrors{}
+
+		for _, err := range err.(validator.ValidationErrors) {
+
+			errorItem := ValidationErrorItems{Field: err.Field(), Detail: err.ActualTag()}
+
+			validationErrors.Errors = append(validationErrors.Errors, errorItem)
+		}
+
+		util.RespondWithJSON(w, http.StatusUnprocessableEntity, APIResponse{Message: validationErrors, Data: nil, Status: "error"})
 		return
 	}
 

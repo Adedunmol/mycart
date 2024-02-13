@@ -9,15 +9,24 @@ import (
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/util"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-playground/validator/v10"
 )
 
 type CreateProductDto struct {
+	Name     string `json:"name" validate:"required"`
+	Details  string `json:"details" validate:"required"`
+	Price    int    `json:"price" validate:"required"`
+	Quantity int    `json:"quantity" validate:"required"`
+	Category string `json:"category" validate:"required"`
+	// Date     time.Time `json:"date"`
+}
+
+type UpdateProductDto struct {
 	Name     string `json:"name"`
 	Details  string `json:"details"`
 	Price    int    `json:"price"`
 	Quantity int    `json:"quantity"`
 	Category string `json:"category"`
-	// Date     time.Time `json:"date"`
 }
 
 func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
@@ -33,6 +42,21 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		fmt.Println(err)
 		util.RespondWithJSON(w, http.StatusBadRequest, "Invalid request body")
+		return
+	}
+
+	if err := util.Validator.Struct(productDto); err != nil {
+
+		validationErrors := ValidationErrors{}
+
+		for _, err := range err.(validator.ValidationErrors) {
+
+			errorItem := ValidationErrorItems{Field: err.Field(), Detail: err.ActualTag()}
+
+			validationErrors.Errors = append(validationErrors.Errors, errorItem)
+		}
+
+		util.RespondWithJSON(w, http.StatusUnprocessableEntity, APIResponse{Message: validationErrors, Data: nil, Status: "error"})
 		return
 	}
 
@@ -171,7 +195,7 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var productDto CreateProductDto
+	var productDto UpdateProductDto
 	err := json.NewDecoder(r.Body).Decode(&productDto)
 
 	if _, ok := err.(*json.InvalidUnmarshalError); ok {
