@@ -4,12 +4,14 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"strings"
 
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/util"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
+	"gorm.io/gorm/clause"
 )
 
 type CreateProductDto struct {
@@ -120,16 +122,59 @@ func GetProductHandler(w http.ResponseWriter, r *http.Request) {
 func GetAllProductsHandler(w http.ResponseWriter, r *http.Request) {
 	var products []models.Product
 
+	clauses := make([]clause.Expression, 0)
+
 	// filters
-	// category := r.URL.Query().Get("catgeory")
-	// priceMin := r.URL.Query().Get("price_min")
-	// priceMax := r.URL.Query().Get("price_max")
-	// rating := r.URL.Query().Get("rating")
+	category := r.URL.Query().Get("category")
+	minPrice := r.URL.Query().Get("min_price")
+	maxPrice := r.URL.Query().Get("max_price")
+	minRating := r.URL.Query().Get("min_rating")
+	maxRating := r.URL.Query().Get("max_rating")
 
 	// // sorting
-	// sortBy := r.URL.Query().Get("sort_by")
+	sortBy := r.URL.Query().Get("sort_by")
 
-	database.Database.DB.Where("deleted_at is null").Find(&products)
+	if category != "" {
+		clauses = append(clauses, clause.Eq{Column: "category", Value: category})
+	}
+
+	if minPrice != "" {
+		clauses = append(clauses, clause.Gte{Column: "price", Value: minPrice})
+	}
+
+	if maxPrice != "" {
+		clauses = append(clauses, clause.Lte{Column: "price", Value: maxPrice})
+	}
+
+	if minRating != "" {
+		clauses = append(clauses, clause.Gte{Column: "rating", Value: minRating})
+	}
+
+	if maxRating != "" {
+		clauses = append(clauses, clause.Lte{Column: "rating", Value: maxRating})
+	}
+
+	if sortBy != "" {
+		condition := strings.Split(sortBy, "-")
+
+		var orderDesc bool
+
+		if strings.ToLower(condition[1]) == "desc" {
+			orderDesc = true
+		}
+
+		switch strings.ToLower(condition[0]) {
+
+		case "price":
+			clauses = append(clauses, clause.OrderBy{Columns: []clause.OrderByColumn{{Column: clause.Column{Name: condition[0]}, Desc: orderDesc, Reorder: false}}})
+
+		default:
+		}
+	}
+
+	fmt.Println(clauses)
+
+	database.Database.DB.Where("deleted_at is null").Clauses(clauses...).Find(&products)
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: products, Status: "success"})
 }
