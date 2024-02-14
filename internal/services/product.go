@@ -16,7 +16,7 @@ type CreateProductDto struct {
 	Name     string `json:"name" validate:"required"`
 	Details  string `json:"details" validate:"required"`
 	Price    int    `json:"price" validate:"required"`
-	Quantity int    `json:"quantity" validate:"required"`
+	Quantity int    `json:"quantity" validate:"required, min=1"`
 	Category string `json:"category" validate:"required"`
 	// Date     time.Time `json:"date"`
 }
@@ -119,6 +119,15 @@ func GetProductHandler(w http.ResponseWriter, r *http.Request) {
 
 func GetAllProductsHandler(w http.ResponseWriter, r *http.Request) {
 	var products []models.Product
+
+	// filters
+	// category := r.URL.Query().Get("catgeory")
+	// priceMin := r.URL.Query().Get("price_min")
+	// priceMax := r.URL.Query().Get("price_max")
+	// rating := r.URL.Query().Get("rating")
+
+	// // sorting
+	// sortBy := r.URL.Query().Get("sort_by")
 
 	database.Database.DB.Where("deleted_at is null").Find(&products)
 
