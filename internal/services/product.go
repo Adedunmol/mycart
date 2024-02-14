@@ -3,7 +3,9 @@ package services
 import (
 	"encoding/json"
 	"fmt"
+	"log"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/Adedunmol/mycart/internal/database"
@@ -131,8 +133,12 @@ func GetAllProductsHandler(w http.ResponseWriter, r *http.Request) {
 	minRating := r.URL.Query().Get("min_rating")
 	maxRating := r.URL.Query().Get("max_rating")
 
-	// // sorting
+	// sorting
 	sortBy := r.URL.Query().Get("sort_by")
+
+	// pagination
+	page := r.URL.Query().Get("page")
+	pageSize := r.URL.Query().Get("page_size")
 
 	if category != "" {
 		clauses = append(clauses, clause.Eq{Column: "category", Value: category})
@@ -170,6 +176,22 @@ func GetAllProductsHandler(w http.ResponseWriter, r *http.Request) {
 
 		default:
 		}
+	}
+
+	newPage, err := strconv.ParseUint(page, 10, 8)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	newPageSize, err := strconv.ParseUint(pageSize, 10, 8)
+
+	offset := (newPage - 1) * newPageSize
+
+	intPageSize := int(newPageSize)
+
+	if pageSize != "" {
+		clauses = append(clauses, clause.Limit{Limit: &intPageSize, Offset: int(offset)})
 	}
 
 	fmt.Println(clauses)
