@@ -1,45 +1,34 @@
 package database
 
 import (
-	"log"
-
 	"github.com/Adedunmol/mycart/internal/config"
+	customLogger "github.com/Adedunmol/mycart/internal/logger"
 	"github.com/Adedunmol/mycart/internal/models"
-	_ "github.com/lib/pq"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 )
 
-type DbInstance struct {
-	DB *gorm.DB
-}
+var DB *gorm.DB
 
-var Database DbInstance
-
-func InitDB() (DbInstance, error) {
+func InitDB() {
 	var err error
-	var db *gorm.DB
 
 	if config.EnvConfig.Environment == "test" {
-		db, err = gorm.Open(postgres.Open(config.EnvConfig.TestDatabaseUrl), &gorm.Config{})
+		DB, err = gorm.Open(postgres.Open(config.EnvConfig.TestDatabaseUrl), &gorm.Config{TranslateError: true})
 	} else {
-		db, err = gorm.Open(postgres.Open(config.EnvConfig.DatabaseUrl), &gorm.Config{})
+		DB, err = gorm.Open(postgres.Open(config.EnvConfig.DatabaseUrl), &gorm.Config{TranslateError: true})
 	}
 
 	if err != nil {
-		log.Fatal("Error connecting to the db: ", err)
+		customLogger.Error.Fatal("error connecting to db: %w", err)
 	}
 
 	if config.EnvConfig.Environment != "test" {
-		db.Logger = logger.Default.LogMode(logger.Info)
+		DB.Logger = logger.Default.LogMode(logger.Info)
 
-		log.Println("Running migrations")
+		customLogger.Info.Println("Running migrations")
 	}
 
-	db.AutoMigrate(&models.Role{}, &models.User{}, &models.Product{}, &models.Cart{}, &models.CartItem{}, &models.Order{}, &models.Review{})
-
-	Database = DbInstance{DB: db}
-
-	return Database, nil
+	DB.AutoMigrate(&models.User{})
 }

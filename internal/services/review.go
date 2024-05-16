@@ -61,7 +61,7 @@ func CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 
 	var foundUser models.User
 
-	result := database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+	result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
@@ -70,7 +70,7 @@ func CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 
 	var product models.Product
 
-	result = database.Database.DB.First(&product, id)
+	result = database.DB.First(&product, id)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "", Data: nil, Status: "success"})
@@ -83,7 +83,7 @@ func CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 		ProductID: product.ID,
 	}
 
-	result = database.Database.DB.Create(&review)
+	result = database.DB.Create(&review)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -103,7 +103,7 @@ func GetReviewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var review models.Review
-	result := database.Database.DB.First(&review, id)
+	result := database.DB.First(&review, id)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "review not found", Data: nil, Status: "success"})

@@ -28,12 +28,12 @@ func InsertRoles() {
 
 	for r := range roles {
 		var role models.Role
-		result := Database.DB.Where(&models.Role{Name: r}).First(&role)
+		result := DB.Where(&models.Role{Name: r}).First(&role)
 
 		if result.Error != nil && result.Error == gorm.ErrRecordNotFound {
 			role = models.Role{Name: r}
 
-			exec_result := Database.DB.Create(&role)
+			exec_result := DB.Create(&role)
 
 			if exec_result.Error != nil {
 				fmt.Println("Unable to create role")
@@ -47,7 +47,7 @@ func InsertRoles() {
 
 		role.Default = (role.Name == default_role)
 
-		Database.DB.Save(role)
+		DB.Save(role)
 	}
 
 	fmt.Println(roles, default_role)

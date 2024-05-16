@@ -73,7 +73,7 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	var foundUser models.User
 
-	result := database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+	result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
@@ -89,7 +89,7 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 		Vendor:   foundUser.ID,
 	}
 
-	result = database.Database.DB.Create(&product)
+	result = database.DB.Create(&product)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -110,7 +110,7 @@ func GetProductHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var product models.Product
-	result := database.Database.DB.First(&product, id)
+	result := database.DB.First(&product, id)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -196,7 +196,7 @@ func GetAllProductsHandler(w http.ResponseWriter, r *http.Request) {
 
 	fmt.Println(clauses)
 
-	database.Database.DB.Where("deleted_at is null").Clauses(clauses...).Find(&products)
+	database.DB.Where("deleted_at is null").Clauses(clauses...).Find(&products)
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: products, Status: "success"})
 }
@@ -212,7 +212,7 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	var product models.Product
 
-	result := database.Database.DB.Where("deleted_at is null").First(&product, id)
+	result := database.DB.Where("deleted_at is null").First(&product, id)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -229,7 +229,7 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	var foundUser models.User
 
-	result = database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+	result = database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
@@ -241,7 +241,7 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result = database.Database.DB.Delete(&product)
+	result = database.DB.Delete(&product)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -263,7 +263,7 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	var product models.Product
 
-	result := database.Database.DB.Where("deleted_at is null").First(&product, id)
+	result := database.DB.Where("deleted_at is null").First(&product, id)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -295,7 +295,7 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 
 	var foundUser models.User
 
-	result = database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+	result = database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
@@ -307,7 +307,7 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result = database.Database.DB.Model(&product).Updates(models.Product{
+	result = database.DB.Model(&product).Updates(models.Product{
 		Name:     productDto.Name,
 		Details:  product.Details,
 		Price:    productDto.Price,

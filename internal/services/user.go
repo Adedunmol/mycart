@@ -72,7 +72,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	var foundUser models.User
 
-	result := database.Database.DB.Where(models.User{Username: userDto.Username}).First(&foundUser)
+	result := database.DB.Where(models.User{Username: userDto.Username}).First(&foundUser)
 
 	if result.Error == nil {
 		util.RespondWithJSON(w, http.StatusConflict, APIResponse{Message: "username already exists", Data: nil, Status: "error"})
@@ -84,9 +84,9 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	var role models.Role
 
 	if strings.Contains(roleToAssign, "users") {
-		result = database.Database.DB.Where(models.Role{Default: true}).First(&role)
+		result = database.DB.Where(models.Role{Default: true}).First(&role)
 	} else {
-		result = database.Database.DB.Where(models.Role{Name: "Vendor"}).First(&role)
+		result = database.DB.Where(models.Role{Name: "Vendor"}).First(&role)
 	}
 
 	if result.Error != nil {
@@ -112,7 +112,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		RoleID:    role.ID,
 	}
 
-	result = database.Database.DB.Create(&user)
+	result = database.DB.Create(&user)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -161,7 +161,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	var foundUser models.User
 
-	result := database.Database.DB.Where(models.User{Email: userDto.Email}).First(&foundUser)
+	result := database.DB.Where(models.User{Email: userDto.Email}).First(&foundUser)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
@@ -199,7 +199,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   1 * 60 * 60,
 	}
 
-	result = database.Database.DB.Model(&foundUser).UpdateColumn("RefreshToken", refreshToken)
+	result = database.DB.Model(&foundUser).UpdateColumn("RefreshToken", refreshToken)
 
 	data := Response{Token: accessToken, Expiration: time.Duration(util.ACCESS_TOKEN_EXPIRATION.Seconds())}
 
@@ -222,7 +222,7 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 
 	var foundUser models.User
 
-	result := database.Database.DB.Where(models.User{RefreshToken: token.Value}).First(&foundUser)
+	result := database.DB.Where(models.User{RefreshToken: token.Value}).First(&foundUser)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusForbidden, APIResponse{Message: "user with token does not exist", Data: nil, Status: "error"})
@@ -268,7 +268,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 
 	var foundUser models.User
 
-	result := database.Database.DB.Where(models.User{RefreshToken: token.Value}).First(&foundUser)
+	result := database.DB.Where(models.User{RefreshToken: token.Value}).First(&foundUser)
 
 	if result.Error != nil {
 		http.SetCookie(w, &cookie)
@@ -276,7 +276,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result = database.Database.DB.Model(&foundUser).UpdateColumn("RefreshToken", "")
+	result = database.DB.Model(&foundUser).UpdateColumn("RefreshToken", "")
 
 	http.SetCookie(w, &cookie)
 

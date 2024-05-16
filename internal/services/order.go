@@ -28,14 +28,14 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 
 	var foundUser models.User
 
-	result := database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+	result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
 		return
 	}
 
-	result = database.Database.DB.Preload("CartItems").First(&cart, cartID)
+	result = database.DB.Preload("CartItems").First(&cart, cartID)
 
 	if len(cart.CartItems) < 1 {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "cart is empty", Data: nil, Status: "error"})
@@ -51,7 +51,7 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 		CartID:  uint8(cart.ID),
 	}
 
-	result = database.Database.DB.Create(&order)
+	result = database.DB.Create(&order)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "unable to create order", Data: nil, Status: "error"})
@@ -60,11 +60,11 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 
 	for _, product := range cart.CartItems {
 		var foundProduct models.Product
-		result = database.Database.DB.First(&foundProduct, product.ID)
+		result = database.DB.First(&foundProduct, product.ID)
 
 		newQuantity := foundProduct.Quantity - product.Quantity // (quantity in store - quantity bought)
 
-		result = database.Database.DB.Model(&product).Updates(models.Product{
+		result = database.DB.Model(&product).Updates(models.Product{
 			Quantity: newQuantity,
 		})
 

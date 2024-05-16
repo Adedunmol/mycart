@@ -20,7 +20,7 @@ func GeneratePdf(cart models.Cart, user models.User) (string, error) {
 
 	var foundUser models.User
 
-	result := database.Database.DB.First(&foundUser, user.ID)
+	result := database.DB.First(&foundUser, user.ID)
 
 	if result.Error != nil {
 		return "", errors.New("no user found with this id")

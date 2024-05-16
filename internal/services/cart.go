@@ -41,25 +41,25 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 
 	var foundUser models.User
 
-	result := database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+	result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
 		return
 	}
 
-	result = database.Database.DB.First(&cart, foundUser.ID)
+	result = database.DB.First(&cart, foundUser.ID)
 
 	if result.Error != nil {
 		cart = models.Cart{
 			BuyerID: foundUser.ID,
 		}
 
-		result = database.Database.DB.Create(&cart)
+		result = database.DB.Create(&cart)
 	}
 
 	var product models.Product
-	result = database.Database.DB.First(&product, productID)
+	result = database.DB.First(&product, productID)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -81,7 +81,7 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 		TotalPrice:  uint(newQuantity) * uint(product.Price),
 	}
 
-	result = database.Database.DB.Create(&cartItem)
+	result = database.DB.Create(&cartItem)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -91,11 +91,11 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 
 	newCartPrice := cart.TotalPrice + cartItem.TotalPrice
 
-	result = database.Database.DB.Model(&cart).Updates(models.Cart{
+	result = database.DB.Model(&cart).Updates(models.Cart{
 		TotalPrice: newCartPrice,
 	})
 
-	result = database.Database.DB.Preload("CartItems").First(&cart, cart.ID)
+	result = database.DB.Preload("CartItems").First(&cart, cart.ID)
 
 	if result.Error != nil {
 		fmt.Println(result.Error)
@@ -125,14 +125,14 @@ func RemoveFromCartHandler(w http.ResponseWriter, r *http.Request) {
 
 	var foundUser models.User
 
-	result := database.Database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+	result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
 		return
 	}
 
-	result = database.Database.DB.First(&cart, foundUser.ID)
+	result = database.DB.First(&cart, foundUser.ID)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not have a cart", Data: nil, Status: "error"})
@@ -152,7 +152,7 @@ func RemoveFromCartHandler(w http.ResponseWriter, r *http.Request) {
 	for _, cartItem := range cart.CartItems {
 		if cartItem.ProductID == uint(newProductID) {
 
-			result = database.Database.DB.Delete(&cartItem)
+			result = database.DB.Delete(&cartItem)
 
 			if result.Error != nil {
 				fmt.Println(result.Error)
