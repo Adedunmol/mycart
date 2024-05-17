@@ -1,21 +1,16 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
 	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/Adedunmol/mycart/internal/models"
+	"github.com/Adedunmol/mycart/internal/schema"
 	"github.com/Adedunmol/mycart/internal/util"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-playground/validator/v10"
 )
-
-type CreateReviewDto struct {
-	Comment string `json:"comment" validate:"required"`
-	Rating  uint   `json:"rating" validate:"required"`
-}
 
 func CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 	id := chi.URLParam(r, "id")
@@ -25,31 +20,19 @@ func CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var reviewDto CreateReviewDto
-	err := json.NewDecoder(r.Body).Decode(&reviewDto)
+	data, problems, err := util.DecodeJSON[*schema.CreateReviewDto](r)
 
-	if _, ok := err.(*json.InvalidUnmarshalError); ok {
-		util.RespondWithJSON(w, http.StatusInternalServerError, "Unable to format the request body")
-		return
-	}
 	if err != nil {
-		util.RespondWithJSON(w, http.StatusBadRequest, "Invalid request body")
-		return
-	}
-
-	if err := util.Validator.Struct(reviewDto); err != nil {
-
-		validationErrors := ValidationErrors{}
-
-		for _, err := range err.(validator.ValidationErrors) {
-
-			errorItem := ValidationErrorItems{Field: err.Field(), Detail: err.ActualTag()}
-
-			validationErrors.Errors = append(validationErrors.Errors, errorItem)
+		if err == util.ErrValidation {
+			util.RespondWithJSON(w, http.StatusUnprocessableEntity, util.APIResponse{Status: "error", Message: "error processing data", Data: problems})
+			return
 		}
 
-		util.RespondWithJSON(w, http.StatusUnprocessableEntity, APIResponse{Message: validationErrors, Data: nil, Status: "error"})
-		return
+		if err == util.ErrDecode {
+			logger.Error.Println(err)
+			util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Status: "error", Message: "request body needed", Data: nil})
+			return
+		}
 	}
 
 	username := r.Context().Value("username")
@@ -78,8 +61,8 @@ func CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	review := models.Review{
-		Comment:   reviewDto.Comment,
-		Rating:    reviewDto.Rating,
+		Comment:   data.Comment,
+		Rating:    data.Rating,
 		ProductID: product.ID,
 	}
 

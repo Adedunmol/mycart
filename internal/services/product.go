@@ -1,7 +1,6 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -9,43 +8,27 @@ import (
 	"strings"
 
 	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/Adedunmol/mycart/internal/models"
+	"github.com/Adedunmol/mycart/internal/schema"
 	"github.com/Adedunmol/mycart/internal/util"
 	"github.com/go-chi/chi/v5"
 	"gorm.io/gorm/clause"
-	"gorm.io/gorm/logger"
 )
 
-type CreateProductDto struct {
-	Name     string `json:"name" validate:"required"`
-	Details  string `json:"details" validate:"required"`
-	Price    int    `json:"price" validate:"required"`
-	Quantity int    `json:"quantity" validate:"required, min=1"`
-	Category string `json:"category" validate:"required"`
-	// Date     time.Time `json:"date"`
-}
-
-type UpdateProductDto struct {
-	Name     string `json:"name"`
-	Details  string `json:"details"`
-	Price    int    `json:"price"`
-	Quantity int    `json:"quantity"`
-	Category string `json:"category"`
-}
-
 func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
-	data, problems, err := util.DecodeJSON[*schema.CreateUser](r)
+	data, problems, err := util.DecodeJSON[*schema.CreateProductDto](r)
 
 	if err != nil {
 
 		if err == util.ErrValidation {
-			util.RespondWithJSON(w, http.StatusUnprocessableEntity, helpers.APIResponse{Status: "error", Message: "error processing data", Data: problems})
+			util.RespondWithJSON(w, http.StatusUnprocessableEntity, util.APIResponse{Status: "error", Message: "error processing data", Data: problems})
 			return
 		}
 
 		if err == util.ErrDecode {
 			logger.Error.Println(err)
-			util.RespondWithJSON(w, http.StatusBadRequest, helpers.APIResponse{Status: "error", Message: "request body needed", Data: nil})
+			util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Status: "error", Message: "request body needed", Data: nil})
 			return
 		}
 	}
@@ -67,11 +50,11 @@ func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	product := models.Product{
-		Name:     productDto.Name,
-		Details:  productDto.Details,
-		Price:    productDto.Price,
-		Category: productDto.Category,
-		Quantity: uint(productDto.Quantity),
+		Name:     data.Name,
+		Details:  data.Details,
+		Price:    data.Price,
+		Category: data.Category,
+		Quantity: uint(data.Quantity),
 		Vendor:   foundUser.ID,
 	}
 
@@ -257,19 +240,20 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	var productDto UpdateProductDto
-	err := json.NewDecoder(r.Body).Decode(&productDto)
-
-	if _, ok := err.(*json.InvalidUnmarshalError); ok {
-		fmt.Println(err)
-		util.RespondWithJSON(w, http.StatusInternalServerError, "Unable to format the request body")
-		return
-	}
+	data, problems, err := util.DecodeJSON[*schema.UpdateProductDto](r)
 
 	if err != nil {
-		fmt.Println(err)
-		util.RespondWithJSON(w, http.StatusBadRequest, "Invalid request body")
-		return
+
+		if err == util.ErrValidation {
+			util.RespondWithJSON(w, http.StatusUnprocessableEntity, util.APIResponse{Status: "error", Message: "error processing data", Data: problems})
+			return
+		}
+
+		if err == util.ErrDecode {
+			logger.Error.Println(err)
+			util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Status: "error", Message: "request body needed", Data: nil})
+			return
+		}
 	}
 
 	username := r.Context().Value("username")
@@ -294,10 +278,10 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	result = database.DB.Model(&product).Updates(models.Product{
-		Name:     productDto.Name,
-		Details:  product.Details,
-		Price:    productDto.Price,
-		Category: productDto.Category,
+		Name:     data.Name,
+		Details:  data.Details,
+		Price:    data.Price,
+		Category: data.Category,
 	})
 
 	if result.Error != nil {

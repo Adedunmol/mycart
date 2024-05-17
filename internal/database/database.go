@@ -30,5 +30,5 @@ func InitDB() {
 		customLogger.Info.Println("Running migrations")
 	}
 
-	DB.AutoMigrate(&models.User{})
+	DB.AutoMigrate(&models.User{}, &models.Role{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{})
 }
