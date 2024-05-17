@@ -12,7 +12,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Adedunmol/mycart/internal/app"
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/services"
@@ -28,8 +27,6 @@ type APIResponse struct {
 }
 
 func TestMain(m *testing.M) {
-
-	_ = app.Initializers()
 
 	server := httptest.NewServer(http.HandlerFunc(services.CreateUserHandler))
 
@@ -52,7 +49,7 @@ func TestMain(m *testing.M) {
 	code := m.Run()
 
 	// drop table(s) here
-	database.Database.DB.Migrator().DropTable(&models.User{}, &models.Role{}, &models.Product{})
+	database.DB.Migrator().DropTable(&models.User{}, &models.Role{}, &models.Product{})
 
 	os.Exit(code)
 }

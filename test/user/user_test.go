@@ -9,7 +9,6 @@ import (
 	"os"
 	"testing"
 
-	"github.com/Adedunmol/mycart/internal/app"
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/services"
@@ -17,12 +16,10 @@ import (
 
 func TestMain(m *testing.M) {
 
-	_ = app.Initializers()
-
 	code := m.Run()
 
 	// drop table(s) here
-	database.Database.DB.Migrator().DropTable(&models.User{}, &models.Role{})
+	database.DB.Migrator().DropTable(&models.User{}, &models.Role{})
 
 	os.Exit(code)
 }
