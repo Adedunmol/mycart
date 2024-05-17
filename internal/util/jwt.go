@@ -20,8 +20,8 @@ func GenerateToken(username string, expiration time.Duration) (string, error) {
 
 	claims := jwt.MapClaims{
 		"username": username,
-		"exp":      jwt.NewNumericDate(time.Now().Add(expiration)),
-		"IssuedAt": time.Now(),
+		"exp":      time.Now().Add(expiration).Unix(), // jwt.NewNumericDate(time.Now().Add(expiration)),
+		"iat":      time.Now(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
@@ -39,7 +39,7 @@ func DecodeToken(tokenString string) (string, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-			return nil, fmt.Errorf("Unexpected signing method: %v", token.Header["alg"])
+			return nil, fmt.Errorf("unexpected signing method: %v", token.Header["alg"])
 		}
 		return []byte(config.EnvConfig.SecretKey), nil
 	})
@@ -104,7 +104,7 @@ func RoleAuthorization(permissions ...uint8) func(handler http.Handler) http.Han
 
 			var role models.Role
 
-			result = database.DB.First(&role, foundUser.RoleID)
+			database.DB.First(&role, foundUser.RoleID)
 
 			for _, perm := range permissions {
 
