@@ -12,8 +12,8 @@ import (
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/util"
 	"github.com/go-chi/chi/v5"
-	"github.com/go-playground/validator/v10"
 	"gorm.io/gorm/clause"
+	"gorm.io/gorm/logger"
 )
 
 type CreateProductDto struct {
@@ -34,34 +34,20 @@ type UpdateProductDto struct {
 }
 
 func CreateProductHandler(w http.ResponseWriter, r *http.Request) {
-	var productDto CreateProductDto
-	err := json.NewDecoder(r.Body).Decode(&productDto)
-
-	if _, ok := err.(*json.InvalidUnmarshalError); ok {
-		fmt.Println(err)
-		util.RespondWithJSON(w, http.StatusInternalServerError, "Unable to format the request body")
-		return
-	}
+	data, problems, err := util.DecodeJSON[*schema.CreateUser](r)
 
 	if err != nil {
-		fmt.Println(err)
-		util.RespondWithJSON(w, http.StatusBadRequest, "Invalid request body")
-		return
-	}
 
-	if err := util.Validator.Struct(productDto); err != nil {
-
-		validationErrors := ValidationErrors{}
-
-		for _, err := range err.(validator.ValidationErrors) {
-
-			errorItem := ValidationErrorItems{Field: err.Field(), Detail: err.ActualTag()}
-
-			validationErrors.Errors = append(validationErrors.Errors, errorItem)
+		if err == util.ErrValidation {
+			util.RespondWithJSON(w, http.StatusUnprocessableEntity, helpers.APIResponse{Status: "error", Message: "error processing data", Data: problems})
+			return
 		}
 
-		util.RespondWithJSON(w, http.StatusUnprocessableEntity, APIResponse{Message: validationErrors, Data: nil, Status: "error"})
-		return
+		if err == util.ErrDecode {
+			logger.Error.Println(err)
+			util.RespondWithJSON(w, http.StatusBadRequest, helpers.APIResponse{Status: "error", Message: "request body needed", Data: nil})
+			return
+		}
 	}
 
 	username := r.Context().Value("username")

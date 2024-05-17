@@ -1,17 +1,18 @@
 package services
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 	"strings"
 	"time"
 
 	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/Adedunmol/mycart/internal/models"
+	"github.com/Adedunmol/mycart/internal/schema"
 	"github.com/Adedunmol/mycart/internal/util"
-	"github.com/go-playground/validator/v10"
 	"golang.org/x/crypto/bcrypt"
+	"gorm.io/gorm"
 )
 
 type CreateUserDto struct {
@@ -43,41 +44,23 @@ type ValidationErrorItems struct {
 }
 
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
-	var userDto CreateUserDto
-	err := json.NewDecoder(r.Body).Decode(&userDto)
+	data, problems, err := util.DecodeJSON[*schema.CreateUser](r)
 
-	if _, ok := err.(*json.InvalidUnmarshalError); ok {
-		util.RespondWithJSON(w, http.StatusInternalServerError, "Unable to format the request body")
-		return
-	}
 	if err != nil {
-		util.RespondWithJSON(w, http.StatusBadRequest, "Invalid request body")
-		return
-	}
 
-	if err := util.Validator.Struct(userDto); err != nil {
-
-		validationErrors := ValidationErrors{}
-
-		for _, err := range err.(validator.ValidationErrors) {
-
-			errorItem := ValidationErrorItems{Field: err.Field(), Detail: err.ActualTag()}
-
-			validationErrors.Errors = append(validationErrors.Errors, errorItem)
+		if err == util.ErrValidation {
+			util.RespondWithJSON(w, http.StatusUnprocessableEntity, util.APIResponse{Status: "error", Message: "error processing data", Data: problems})
+			return
 		}
 
-		util.RespondWithJSON(w, http.StatusUnprocessableEntity, APIResponse{Message: validationErrors, Data: nil, Status: "error"})
-		return
+		if err == util.ErrDecode {
+			logger.Error.Println(err)
+			util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Status: "error", Message: "request body needed", Data: nil})
+			return
+		}
 	}
 
-	var foundUser models.User
-
-	result := database.DB.Where(models.User{Username: userDto.Username}).First(&foundUser)
-
-	if result.Error == nil {
-		util.RespondWithJSON(w, http.StatusConflict, APIResponse{Message: "username already exists", Data: nil, Status: "error"})
-		return
-	}
+	var result *gorm.DB
 
 	roleToAssign := r.URL.String()
 
@@ -95,7 +78,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(userDto.Password), 14)
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), 14)
 
 	if err != nil {
 		fmt.Println("could not hash password", err)
@@ -104,11 +87,11 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	user := models.User{
-		FirstName: userDto.FirstName,
-		LastName:  userDto.LastName,
-		Email:     userDto.Email,
+		FirstName: data.FirstName,
+		LastName:  data.LastName,
+		Email:     data.Email,
 		Password:  string(hashedPassword),
-		Username:  userDto.Username,
+		Username:  data.Username,
 		RoleID:    role.ID,
 	}
 
@@ -125,60 +108,48 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
-	var userDto UserLoginDto
 
 	type Response struct {
 		Token      string        `json:"token"`
 		Expiration time.Duration `json:"expiration"`
 	}
 
-	err := json.NewDecoder(r.Body).Decode(&userDto)
-
-	if _, ok := err.(*json.InvalidUnmarshalError); ok {
-		util.RespondWithJSON(w, http.StatusInternalServerError, "Unable to format the request body")
-		return
-	}
+	data, problems, err := util.DecodeJSON[*schema.CreateUser](r)
 
 	if err != nil {
-		util.RespondWithJSON(w, http.StatusBadRequest, "Invalid request body")
-		return
-	}
 
-	if err := util.Validator.Struct(userDto); err != nil {
-
-		validationErrors := ValidationErrors{}
-
-		for _, err := range err.(validator.ValidationErrors) {
-
-			errorItem := ValidationErrorItems{Field: err.Field(), Detail: err.ActualTag()}
-
-			validationErrors.Errors = append(validationErrors.Errors, errorItem)
+		if err == util.ErrValidation {
+			util.RespondWithJSON(w, http.StatusUnprocessableEntity, util.APIResponse{Status: "error", Message: "error processing data", Data: problems})
+			return
 		}
 
-		util.RespondWithJSON(w, http.StatusUnprocessableEntity, APIResponse{Message: validationErrors, Data: nil, Status: "error"})
-		return
+		if err == util.ErrDecode {
+			logger.Error.Println(err)
+			util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Status: "error", Message: "request body needed", Data: nil})
+			return
+		}
 	}
 
 	var foundUser models.User
 
-	result := database.DB.Where(models.User{Email: userDto.Email}).First(&foundUser)
+	result := database.DB.Where(models.User{Email: data.Email}).First(&foundUser)
 
 	if result.Error != nil {
-		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
 		return
 	}
 
-	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(userDto.Password))
+	err = bcrypt.CompareHashAndPassword([]byte(foundUser.Password), []byte(data.Password))
 
 	if err != nil {
-		util.RespondWithJSON(w, http.StatusUnauthorized, APIResponse{Message: "Invalid credentials", Data: nil, Status: "error"})
+		util.RespondWithJSON(w, http.StatusUnauthorized, util.APIResponse{Message: "Invalid credentials", Data: nil, Status: "error"})
 		return
 	}
 
 	accessToken, err := util.GenerateToken(foundUser.Username, util.ACCESS_TOKEN_EXPIRATION)
 
 	if err != nil {
-		fmt.Println(err)
+		logger.Error.Println(err)
 		util.RespondWithJSON(w, http.StatusInternalServerError, "Unable to generate token")
 		return
 	}
@@ -201,10 +172,10 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	result = database.DB.Model(&foundUser).UpdateColumn("RefreshToken", refreshToken)
 
-	data := Response{Token: accessToken, Expiration: time.Duration(util.ACCESS_TOKEN_EXPIRATION.Seconds())}
+	resData := Response{Token: accessToken, Expiration: time.Duration(util.ACCESS_TOKEN_EXPIRATION.Seconds())}
 
 	http.SetCookie(w, &cookie)
-	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: data, Status: "success"})
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: resData, Status: "success"})
 }
 
 func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
