@@ -11,6 +11,7 @@ type User struct {
 	Username     string    `json:"username" gorm:"unique"`
 	Email        string    `json:"email" gorm:"unique"`
 	Password     string    `json:"-"`
+	Verified     bool      `json:"verified"`
 	RefreshToken string    `json:"refresh_token"`
 	RoleID       uint      `json:"role_id"`
 	Products     []Product `gorm:"foreignKey:Vendor"`

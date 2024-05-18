@@ -13,6 +13,8 @@ type Config struct {
 	TestDatabaseUrl string `mapstructure:"DATABASE_URL_TEST"`
 	Environment     string `mapstructure:"ENVIRONMENT"`
 	SecretKey       string `mapstructure:"SECRET_KEY"`
+	EmailUsername   string `mapstructure:"EMAIL_USERNAME"`
+	EmailPassword   string `mapstructure:"EMAIL_PASSWORD"`
 }
 
 func LoadConfig(path string) (Config, error) {

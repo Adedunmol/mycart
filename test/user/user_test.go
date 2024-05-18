@@ -61,7 +61,7 @@ func TestCreateUserHandlerReturns409(t *testing.T) {
 
 	postBody, _ := json.Marshal(body)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+	_, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
 
 	if err != nil {
 		t.Error(err)
@@ -77,7 +77,7 @@ func TestCreateUserHandlerReturns409(t *testing.T) {
 
 	postBody, _ = json.Marshal(body)
 
-	resp, err = http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+	resp, _ := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
 
 	if resp.StatusCode != http.StatusConflict {
 		t.Errorf("expected 409, but got %d", resp.StatusCode)
@@ -194,7 +194,7 @@ func TestRefreshTokenHandlerReturns200(t *testing.T) {
 
 	cookie := &http.Cookie{Name: "token", Value: token}
 
-	req, err = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
+	req, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 	req.AddCookie(cookie)
 
 	services.RefreshTokenHandler(rr, req)
@@ -250,7 +250,7 @@ func TestLogoutHandlerWithCookieReturns204(t *testing.T) {
 
 	cookie := &http.Cookie{Name: "token", Value: token}
 
-	req, err = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
+	req, _ = http.NewRequest(http.MethodGet, "", bytes.NewBuffer([]byte{}))
 	req.AddCookie(cookie)
 
 	services.LogoutHandler(rr, req)
