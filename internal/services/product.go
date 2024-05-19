@@ -153,7 +153,7 @@ func GetAllProductsHandler(w http.ResponseWriter, r *http.Request) {
 		log.Fatal(err)
 	}
 
-	newPageSize, err := strconv.ParseUint(pageSize, 10, 8)
+	newPageSize, _ := strconv.ParseUint(pageSize, 10, 8)
 
 	offset := (newPage - 1) * newPageSize
 

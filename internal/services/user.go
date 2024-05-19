@@ -204,7 +204,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		MaxAge:   1 * 60 * 60,
 	}
 
-	result = database.DB.Model(&foundUser).UpdateColumn("RefreshToken", refreshToken)
+	database.DB.Model(&foundUser).UpdateColumn("RefreshToken", refreshToken)
 
 	resData := Response{Token: accessToken, Expiration: time.Duration(util.ACCESS_TOKEN_EXPIRATION.Seconds())}
 
@@ -281,7 +281,7 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result = database.DB.Model(&foundUser).UpdateColumn("RefreshToken", "")
+	_ = database.DB.Model(&foundUser).UpdateColumn("RefreshToken", "")
 
 	http.SetCookie(w, &cookie)
 

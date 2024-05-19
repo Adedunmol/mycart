@@ -55,7 +55,7 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 			BuyerID: foundUser.ID,
 		}
 
-		result = database.DB.Create(&cart)
+		database.DB.Create(&cart)
 	}
 
 	var product models.Product
@@ -91,7 +91,7 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 
 	newCartPrice := cart.TotalPrice + cartItem.TotalPrice
 
-	result = database.DB.Model(&cart).Updates(models.Cart{
+	database.DB.Model(&cart).Updates(models.Cart{
 		TotalPrice: newCartPrice,
 	})
 

@@ -60,7 +60,7 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 
 	for _, product := range cart.CartItems {
 		var foundProduct models.Product
-		result = database.DB.First(&foundProduct, product.ID)
+		database.DB.First(&foundProduct, product.ID)
 
 		newQuantity := foundProduct.Quantity - product.Quantity // (quantity in store - quantity bought)
 
