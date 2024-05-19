@@ -13,6 +13,7 @@ func UsersRoutes(r *chi.Mux) {
 	userRouter.Post("/login", services.LoginUserHandler)
 	userRouter.Get("/refresh", services.RefreshTokenHandler)
 	userRouter.Get("/logout", services.LogoutHandler)
+	userRouter.Post("/verify", services.VerifyUserHandler)
 
 	r.Mount("/users", userRouter)
 }

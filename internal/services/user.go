@@ -17,19 +17,6 @@ import (
 	"gorm.io/gorm"
 )
 
-type CreateUserDto struct {
-	FirstName string `json:"first_name" validate:"required"`
-	LastName  string `json:"last_name" validate:"required"`
-	Email     string `json:"email" validate:"required,email"`
-	Username  string `json:"username" validate:"required"`
-	Password  string `json:"password" validate:"required"`
-}
-
-type UserLoginDto struct {
-	Email    string `json:"email" validate:"required,email"`
-	Password string `json:"password" validate:"required"`
-}
-
 type APIResponse struct {
 	Message interface{} `json:"message"`
 	Data    interface{} `json:"data"`
@@ -289,5 +276,53 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 func VerifyUserHandler(w http.ResponseWriter, r *http.Request) {
+	data, problems, err := util.DecodeJSON[*schema.VerifyUserSchema](r)
 
+	if err != nil {
+
+		if err == util.ErrValidation {
+			util.RespondWithJSON(w, http.StatusUnprocessableEntity, util.APIResponse{Status: "error", Message: "error processing data", Data: problems})
+			return
+		}
+
+		if err == util.ErrDecode {
+			logger.Error.Println(err)
+			util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Status: "error", Message: "request body needed", Data: nil})
+			return
+		}
+	}
+
+	var otp models.Otp
+
+	result := database.DB.First(&otp, data.UserId)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Message: "Account record doesn't exist or has been verified already. Please sign up or log in.", Data: nil, Status: "error"})
+		return
+	}
+
+	if time.Now().Unix() > otp.ExpiresAt.Unix() {
+		util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Message: "Code expired. Please request a new code", Data: nil, Status: "error"})
+		return
+	}
+
+	err = bcrypt.CompareHashAndPassword([]byte(otp.Code), []byte(data.Otp))
+
+	if err != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Message: "Invalid otp", Data: nil, Status: "error"})
+		return
+	}
+
+	var user models.User
+
+	result = database.DB.First(&user, data.UserId)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Message: "Account record doesn't exist. Please sign up.", Data: nil, Status: "error"})
+		return
+	}
+
+	database.DB.Model(&user).UpdateColumn("Verified", true)
+
+	util.RespondWithJSON(w, http.StatusOK, util.APIResponse{Message: "user verified successfully", Data: nil, Status: "success"})
 }
