@@ -2,7 +2,9 @@ package services
 
 import (
 	"fmt"
+	"math/rand"
 	"net/http"
+	"strconv"
 	"strings"
 	"time"
 
@@ -43,6 +45,8 @@ type ValidationErrorItems struct {
 	Detail string `json:"detail"`
 }
 
+const OTP_EXPIRATION = 30 * time.Minute
+
 func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	data, problems, err := util.DecodeJSON[*schema.CreateUser](r)
 
@@ -73,7 +77,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result.Error != nil {
-		fmt.Println("error looking for the role")
+		logger.Error.Println("error looking for the role")
+		logger.Error.Println(result.Error)
 		util.RespondWithJSON(w, http.StatusInternalServerError, "error looking a role")
 		return
 	}
@@ -81,7 +86,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), 14)
 
 	if err != nil {
-		fmt.Println("could not hash password", err)
+		logger.Info.Println("could not hash password")
+		logger.Error.Println(err)
 		util.RespondWithJSON(w, http.StatusInternalServerError, "could not hash password")
 		return
 	}
@@ -98,13 +104,41 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	result = database.DB.Create(&user)
 
 	if result.Error != nil {
-		fmt.Println(result.Error)
+		logger.Error.Println(result.Error)
 		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "error creating user", Data: nil, Status: "error"})
 		return
 	}
 
+	verificationCode := rand.Intn(10000)
+	hashedOtp, err := bcrypt.GenerateFromPassword([]byte(strconv.Itoa(verificationCode)), 14)
+
+	if err != nil {
+		logger.Error.Println("could not hash verification code")
+		logger.Error.Println(err)
+		util.RespondWithJSON(w, http.StatusInternalServerError, "Status internal server error")
+		return
+	}
+
+	otp := models.Otp{
+		User:      user,
+		Code:      string(hashedOtp),
+		ExpiresAt: time.Now().Add(OTP_EXPIRATION),
+	}
+
+	result = database.DB.Create(&otp)
+
+	if result.Error != nil {
+		logger.Error.Println(result.Error)
+		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "error creating otp", Data: nil, Status: "error"})
+		return
+	}
+
+	htmlMail := fmt.Sprintf("Enter this code to verify your mail: %d", verificationCode)
+	plainMail := fmt.Sprintf("Enter this code to verify your mail: %d", verificationCode)
+
+	util.SendMail(user.Email, "Verification Mail", htmlMail, plainMail)
+
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: user, Status: "success"})
-	return
 }
 
 func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
@@ -252,4 +286,8 @@ func LogoutHandler(w http.ResponseWriter, r *http.Request) {
 	http.SetCookie(w, &cookie)
 
 	util.RespondWithJSON(w, http.StatusNoContent, "")
+}
+
+func VerifyUserHandler(w http.ResponseWriter, r *http.Request) {
+
 }

@@ -13,6 +13,7 @@ type User struct {
 	Password     string    `json:"-"`
 	Verified     bool      `json:"verified"`
 	RefreshToken string    `json:"refresh_token"`
+	Otp          uint      `json:"otp"`
 	RoleID       uint      `json:"role_id"`
 	Products     []Product `gorm:"foreignKey:Vendor"`
 	Orders       []Order   `gorm:"foreignKey:BuyerID"`

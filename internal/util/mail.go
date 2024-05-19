@@ -9,7 +9,7 @@ import (
 func SendMail(to string, subject string, html string, plain string) {
 	m := gomail.NewMessage()
 
-	m.SetHeader("From", "")
+	m.SetHeader("From", config.EnvConfig.EmailUsername)
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
 
