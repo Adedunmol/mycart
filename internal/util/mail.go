@@ -16,7 +16,7 @@ func SendMail(to string, subject string, html string, plain string) {
 	m.SetBody("text/html", html)
 	m.SetBody("text/plain", plain)
 
-	d := gomail.NewDialer("smtp.gmail.com", 587, config.EnvConfig.EmailUsername, config.EnvConfig.EmailPassword)
+	d := gomail.NewDialer("sandbox.smtp.mailtrap.io", 587, config.EnvConfig.EmailUsername, config.EnvConfig.EmailPassword)
 
 	if err := d.DialAndSend(m); err != nil {
 		logger.Error.Println("could not send mail")
