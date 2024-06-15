@@ -10,12 +10,18 @@ github.com/PuerkitoBio/urlesc
 # github.com/angelodlfrtr/go-invoice-generator v0.6.0
 ## explicit; go 1.17
 github.com/angelodlfrtr/go-invoice-generator
+# github.com/cespare/xxhash/v2 v2.3.0
+## explicit; go 1.11
+github.com/cespare/xxhash/v2
 # github.com/cockroachdb/apd v1.1.0
 ## explicit
 github.com/cockroachdb/apd
 # github.com/creasty/defaults v1.6.0
 ## explicit; go 1.14
 github.com/creasty/defaults
+# github.com/dgryski/go-rendezvous v0.0.0-20200823014737-9f7001d12a5f
+## explicit
+github.com/dgryski/go-rendezvous
 # github.com/fsnotify/fsnotify v1.7.0
 ## explicit; go 1.17
 github.com/fsnotify/fsnotify
@@ -60,6 +66,16 @@ github.com/go-playground/validator/v10
 # github.com/golang-jwt/jwt/v5 v5.2.0
 ## explicit; go 1.18
 github.com/golang-jwt/jwt/v5
+# github.com/golang/protobuf v1.5.4
+## explicit; go 1.17
+github.com/golang/protobuf/proto
+github.com/golang/protobuf/ptypes
+github.com/golang/protobuf/ptypes/any
+github.com/golang/protobuf/ptypes/duration
+github.com/golang/protobuf/ptypes/timestamp
+# github.com/google/uuid v1.6.0
+## explicit
+github.com/google/uuid
 # github.com/hashicorp/hcl v1.0.0
 ## explicit
 github.com/hashicorp/hcl
@@ -72,6 +88,16 @@ github.com/hashicorp/hcl/hcl/token
 github.com/hashicorp/hcl/json/parser
 github.com/hashicorp/hcl/json/scanner
 github.com/hashicorp/hcl/json/token
+# github.com/hibiken/asynq v0.24.1
+## explicit; go 1.14
+github.com/hibiken/asynq
+github.com/hibiken/asynq/internal/base
+github.com/hibiken/asynq/internal/context
+github.com/hibiken/asynq/internal/errors
+github.com/hibiken/asynq/internal/log
+github.com/hibiken/asynq/internal/proto
+github.com/hibiken/asynq/internal/rdb
+github.com/hibiken/asynq/internal/timeutil
 # github.com/jackc/pgpassfile v1.0.0
 ## explicit; go 1.12
 github.com/jackc/pgpassfile
@@ -131,6 +157,19 @@ github.com/pelletier/go-toml/v2/unstable
 # github.com/pkg/errors v0.9.1
 ## explicit
 github.com/pkg/errors
+# github.com/redis/go-redis/v9 v9.5.3
+## explicit; go 1.18
+github.com/redis/go-redis/v9
+github.com/redis/go-redis/v9/internal
+github.com/redis/go-redis/v9/internal/hashtag
+github.com/redis/go-redis/v9/internal/hscan
+github.com/redis/go-redis/v9/internal/pool
+github.com/redis/go-redis/v9/internal/proto
+github.com/redis/go-redis/v9/internal/rand
+github.com/redis/go-redis/v9/internal/util
+# github.com/robfig/cron/v3 v3.0.1
+## explicit; go 1.12
+github.com/robfig/cron/v3
 # github.com/sagikazarmark/locafero v0.4.0
 ## explicit; go 1.20
 github.com/sagikazarmark/locafero
@@ -199,7 +238,7 @@ golang.org/x/exp/slog/internal/buffer
 golang.org/x/net/html
 golang.org/x/net/html/atom
 golang.org/x/net/idna
-# golang.org/x/sys v0.17.0
+# golang.org/x/sys v0.21.0
 ## explicit; go 1.18
 golang.org/x/sys/cpu
 golang.org/x/sys/execabs
@@ -225,6 +264,9 @@ golang.org/x/text/transform
 golang.org/x/text/unicode/bidi
 golang.org/x/text/unicode/norm
 golang.org/x/text/width
+# golang.org/x/time v0.5.0
+## explicit; go 1.18
+golang.org/x/time/rate
 # golang.org/x/tools v0.13.0
 ## explicit; go 1.18
 golang.org/x/tools/go/ast/astutil
@@ -232,6 +274,41 @@ golang.org/x/tools/go/buildutil
 golang.org/x/tools/go/internal/cgo
 golang.org/x/tools/go/loader
 golang.org/x/tools/internal/typeparams
+# google.golang.org/protobuf v1.34.2
+## explicit; go 1.20
+google.golang.org/protobuf/encoding/prototext
+google.golang.org/protobuf/encoding/protowire
+google.golang.org/protobuf/internal/descfmt
+google.golang.org/protobuf/internal/descopts
+google.golang.org/protobuf/internal/detrand
+google.golang.org/protobuf/internal/editiondefaults
+google.golang.org/protobuf/internal/editionssupport
+google.golang.org/protobuf/internal/encoding/defval
+google.golang.org/protobuf/internal/encoding/messageset
+google.golang.org/protobuf/internal/encoding/tag
+google.golang.org/protobuf/internal/encoding/text
+google.golang.org/protobuf/internal/errors
+google.golang.org/protobuf/internal/filedesc
+google.golang.org/protobuf/internal/filetype
+google.golang.org/protobuf/internal/flags
+google.golang.org/protobuf/internal/genid
+google.golang.org/protobuf/internal/impl
+google.golang.org/protobuf/internal/order
+google.golang.org/protobuf/internal/pragma
+google.golang.org/protobuf/internal/set
+google.golang.org/protobuf/internal/strs
+google.golang.org/protobuf/internal/version
+google.golang.org/protobuf/proto
+google.golang.org/protobuf/reflect/protodesc
+google.golang.org/protobuf/reflect/protoreflect
+google.golang.org/protobuf/reflect/protoregistry
+google.golang.org/protobuf/runtime/protoiface
+google.golang.org/protobuf/runtime/protoimpl
+google.golang.org/protobuf/types/descriptorpb
+google.golang.org/protobuf/types/gofeaturespb
+google.golang.org/protobuf/types/known/anypb
+google.golang.org/protobuf/types/known/durationpb
+google.golang.org/protobuf/types/known/timestamppb
 # gopkg.in/alexcesaro/quotedprintable.v3 v3.0.0-20150716171945-2caba252f4dc
 ## explicit
 gopkg.in/alexcesaro/quotedprintable.v3
