@@ -1,4 +1,4 @@
-package test
+package services_test
 
 import (
 	"bytes"
@@ -6,23 +6,20 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
 
-	"github.com/Adedunmol/mycart/internal/database"
-	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/services"
 )
 
-func TestMain(m *testing.M) {
+// func TestMain(m *testing.M) {
 
-	code := m.Run()
+// 	code := m.Run()
 
-	// drop table(s) here
-	database.DB.Migrator().DropTable(&models.User{}, &models.Role{})
+// 	// drop table(s) here
+// 	database.DB.Migrator().DropTable(&models.User{}, &models.Role{})
 
-	os.Exit(code)
-}
+// 	os.Exit(code)
+// }
 
 func TestCreateUserHandlerReturns201(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(services.CreateUserHandler))

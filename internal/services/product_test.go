@@ -1,4 +1,4 @@
-package test
+package services_test
 
 import (
 	"bytes"
@@ -103,7 +103,6 @@ func TestCreateProductHandlerReturns400(t *testing.T) {
 		t.Error(err)
 	}
 
-	fmt.Println(jsonResponse.Data)
 }
 
 func TestCreateProductHandlerReturns200(t *testing.T) {
