@@ -3,6 +3,7 @@ package app
 import (
 	"log"
 	"net/http"
+	"sync"
 
 	"github.com/Adedunmol/mycart/internal/config"
 	"github.com/Adedunmol/mycart/internal/database"
@@ -12,19 +13,23 @@ import (
 	"github.com/go-chi/httplog/v2"
 )
 
+var dbConnOnce *sync.Once
+
 func init() {
 	_, err := config.LoadConfig("../..")
 	if err != nil {
 		log.Fatal("Error loading .env file: ", err)
 	}
 
-	database.InitDB()
+	dbConnOnce.Do(func() {
+		database.InitDB()
 
-	if err != nil {
-		log.Panic(err)
-	}
+		if err != nil {
+			log.Panic(err)
+		}
 
-	database.InsertRoles()
+		database.InsertRoles()
+	})
 }
 
 func Run(logger *httplog.Logger) {

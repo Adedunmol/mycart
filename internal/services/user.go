@@ -12,6 +12,7 @@ import (
 	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/schema"
+	"github.com/Adedunmol/mycart/internal/tasks"
 	"github.com/Adedunmol/mycart/internal/util"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
@@ -119,6 +120,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "error creating otp", Data: nil, Status: "error"})
 		return
 	}
+
+	_, err = tasks.NewEmailDeliveryTask(int(user.ID), struct{}{})
 
 	htmlMail := fmt.Sprintf("Enter this code to verify your mail: %d", verificationCode)
 	plainMail := fmt.Sprintf("Enter this code to verify your mail: %d", verificationCode)
