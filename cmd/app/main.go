@@ -4,15 +4,15 @@ import (
 	"log/slog"
 
 	"github.com/Adedunmol/mycart/internal/app"
+	"github.com/Adedunmol/mycart/internal/tasks"
 	"github.com/go-chi/httplog/v2"
-	"github.com/hibiken/asynq"
 )
 
-const redisAddr = "127.0.0.1:6379"
+const redisAddress = "127.0.0.1:6379"
 
 func main() {
-	client := asynq.NewClient((asynq.RedisClientOpt{Addr: redisAddr}))
-	defer client.Close()
+	tasks.Init(redisAddress)
+	defer tasks.Close()
 
 	logger := httplog.NewLogger("mycart-logs", httplog.Options{
 		LogLevel:         slog.LevelDebug,
@@ -21,9 +21,4 @@ func main() {
 	})
 
 	app.Run(logger)
-	// r.Use(middleware.Logger)
-	// r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-	// 	w.Write([]byte("Hello World!"))
-	// })
-	// http.ListenAndServe(":3000", r)
 }
