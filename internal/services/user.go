@@ -121,12 +121,31 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	_, err = tasks.NewEmailDeliveryTask(int(user.ID), struct{}{})
+	emailTask, err := tasks.NewEmailDeliveryTask(int(user.ID), struct {
+		Username string
+		Otp      int
+		Template string
+	}{
+		Username: user.Username,
+		Otp:      verificationCode,
+		Template: "verification",
+	})
 
-	htmlMail := fmt.Sprintf("Enter this code to verify your mail: %d", verificationCode)
-	plainMail := fmt.Sprintf("Enter this code to verify your mail: %d", verificationCode)
+	if err != nil {
+		logger.Error.Printf("Could not create task for: %d", user.ID)
+		logger.Error.Println(err)
+	}
 
-	util.SendMail(user.Email, "Verification Mail", htmlMail, plainMail)
+	client := tasks.GetClient()
+
+	_, err = client.Enqueue(emailTask)
+
+	if err != nil {
+		logger.Error.Printf("Could not enqueue task for: %d", user.ID)
+		logger.Error.Println(err)
+	}
+
+	// util.SendMailWithTemplate("verification", user.Email, "Verify your account", )
 
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: user, Status: "success"})
 }

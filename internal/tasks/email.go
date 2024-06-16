@@ -15,10 +15,10 @@ const (
 
 type EmailDeliveryPayload struct {
 	UserID int
-	Data   struct{}
+	Data   interface{}
 }
 
-func NewEmailDeliveryTask(userID int, data struct{}) (*asynq.Task, error) {
+func NewEmailDeliveryTask(userID int, data interface{}) (*asynq.Task, error) {
 	payload, err := json.Marshal(EmailDeliveryPayload{UserID: userID, Data: data})
 	if err != nil {
 		return nil, err

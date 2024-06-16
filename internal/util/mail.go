@@ -35,7 +35,7 @@ func SendMail(to string, subject string, html string, plain string) {
 	}
 }
 
-func SendMailWithTemplate(templateFile string, to string, subject string, plain string, locals struct{}) {
+func SendMailWithTemplate(templateFile string, to string, subject string, locals struct{}) {
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", config.EnvConfig.EmailUsername)
@@ -75,5 +75,4 @@ func SendMailWithTemplate(templateFile string, to string, subject string, plain 
 	if err := d.DialAndSend(m); err != nil {
 		logger.Error.Println("could not send mail")
 	}
-
 }
