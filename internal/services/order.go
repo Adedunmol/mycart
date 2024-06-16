@@ -5,7 +5,9 @@ import (
 	"net/http"
 
 	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/Adedunmol/mycart/internal/models"
+	"github.com/Adedunmol/mycart/internal/tasks"
 	"github.com/Adedunmol/mycart/internal/util"
 )
 
@@ -76,7 +78,22 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	// generate receipt
-	_, err := util.GeneratePdf(cart, foundUser)
+	// _, err := util.GeneratePdf(cart, foundUser)
+	invoiceTask, err := tasks.NewInvoiceGenerationTask(int(foundUser.ID), int(cart.ID), struct{}{})
+
+	if err != nil {
+		logger.Error.Printf("Could not create task for: %d", cart.ID)
+		logger.Error.Println(err)
+	}
+
+	client := tasks.GetClient()
+
+	_, err = client.Enqueue(invoiceTask)
+
+	if err != nil {
+		logger.Error.Printf("Could not enqueue task for: %d", cart.ID)
+		logger.Error.Println(err)
+	}
 
 	if err != nil {
 		fmt.Println(err)
