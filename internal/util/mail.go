@@ -35,7 +35,7 @@ func SendMail(to string, subject string, html string, plain string) {
 	}
 }
 
-func SendMailWithTemplate(templateFile string, to string, subject string, locals interface{}) {
+func SendMailWithTemplate(templateFile string, to string, subject string, locals interface{}, attachment string) {
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", config.EnvConfig.EmailUsername)
@@ -69,6 +69,10 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 
 	m.SetBody("text/html", htmlBuff.String())
 	m.SetBody("text/plain", textBuff.String())
+
+	if attachment != "" {
+		m.Attach(attachment)
+	}
 
 	d := gomail.NewDialer("sandbox.smtp.mailtrap.io", 587, config.EnvConfig.EmailUsername, config.EnvConfig.EmailPassword)
 

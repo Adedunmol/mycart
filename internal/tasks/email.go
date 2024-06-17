@@ -51,7 +51,7 @@ func HandleEmailDeliveryTask(ctx context.Context, t *asynq.Task) error {
 		return errors.New(message)
 	}
 
-	util.SendMailWithTemplate(p.Template, user.Email, p.Subject, p.Data)
+	util.SendMailWithTemplate(p.Template, user.Email, p.Subject, p.Data, "")
 
 	return nil
 }
