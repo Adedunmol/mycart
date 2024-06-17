@@ -121,15 +121,16 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	emailTask, err := tasks.NewEmailDeliveryTask(int(user.ID), struct {
-		Username string
-		Otp      int
-		Template string
-	}{
-		Username: user.Username,
-		Otp:      verificationCode,
-		Template: "verification",
-	})
+	emailTask, err := tasks.NewEmailDeliveryTask("verification",
+		"Verify your account",
+		int(user.ID),
+		struct {
+			Username string
+			Otp      int
+		}{
+			Username: user.Username,
+			Otp:      verificationCode,
+		})
 
 	if err != nil {
 		logger.Error.Printf("Could not create task for: %d", user.ID)

@@ -35,7 +35,7 @@ func SendMail(to string, subject string, html string, plain string) {
 	}
 }
 
-func SendMailWithTemplate(templateFile string, to string, subject string, locals struct{}) {
+func SendMailWithTemplate(templateFile string, to string, subject string, locals interface{}) {
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", config.EnvConfig.EmailUsername)
