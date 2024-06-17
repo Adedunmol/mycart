@@ -79,7 +79,7 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 
 	// generate receipt
 	// _, err := util.GeneratePdf(cart, foundUser)
-	invoiceTask, err := tasks.NewInvoiceGenerationTask(int(foundUser.ID), int(cart.ID), struct{}{})
+	invoiceTask, err := tasks.NewInvoiceGenerationTask(int(foundUser.ID), int(cart.ID), int(foundUser.ID), struct{}{})
 
 	if err != nil {
 		logger.Error.Printf("Could not create task for: %d", cart.ID)

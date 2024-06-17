@@ -47,6 +47,7 @@ func HandleEmailDeliveryTask(ctx context.Context, t *asynq.Task) error {
 
 	if result.Error != nil {
 		message := fmt.Sprintf("no user found with this id: %d", p.UserID)
+		log.Println(message)
 		return errors.New(message)
 	}
 
