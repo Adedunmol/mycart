@@ -59,6 +59,18 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 			logger.Error.Println("could not parse text file")
 			return
 		}
+	case "purchase":
+		html, err = html.ParseFiles("../email-templates/verification/purchase.html")
+		if err != nil {
+			logger.Error.Println("could not parse html file")
+			return
+		}
+
+		text, err = text.ParseFiles("../email-templates/verification/purchase.txt")
+		if err != nil {
+			logger.Error.Println("could not parse text file")
+			return
+		}
 	}
 
 	htmlBuff := new(bytes.Buffer)

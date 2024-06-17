@@ -62,7 +62,7 @@ func HandleInvoiceGenerationTask(ctx context.Context, t *asynq.Task) error {
 	}
 
 	// generate receipt
-	_, err := util.GeneratePdf(cart, user)
+	filePath, err := util.GeneratePdf(cart, user)
 	if err != nil {
 		message := fmt.Sprintf("error generating receipt for this id: %d", p.CartID)
 		log.Println(message)
@@ -70,6 +70,7 @@ func HandleInvoiceGenerationTask(ctx context.Context, t *asynq.Task) error {
 	}
 
 	// send receipt to user
+	util.SendMailWithTemplate("purchase", user.Email, "Successful purchase", struct{}{}, filePath)
 
 	return nil
 }
