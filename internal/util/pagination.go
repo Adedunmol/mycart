@@ -1,13 +1,14 @@
-
+package util
 
 import (
 	"net/http"
 	"strconv"
+
 	"gorm.io/gorm"
 )
 
-func Paginate(r *http.Request) func(db * gorm.DB) *gorm.DB {
-	return func (db *gorm.DB) *gorm.DB {
+func Paginate(r *http.Request) func(db *gorm.DB) *gorm.DB {
+	return func(db *gorm.DB) *gorm.DB {
 		q := r.URL.Query()
 		page, _ := strconv.Atoi(q.Get("page"))
 		if page <= 0 {

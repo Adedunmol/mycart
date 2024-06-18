@@ -2,9 +2,7 @@ package services
 
 import (
 	"fmt"
-	"log"
 	"net/http"
-	"strconv"
 	"strings"
 
 	"github.com/Adedunmol/mycart/internal/database"
@@ -166,9 +164,9 @@ func GetAllProductsHandler(w http.ResponseWriter, r *http.Request) {
 	fmt.Println(clauses)
 
 	database.DB = database.DB.Where("deleted_at is null").Clauses(clauses...) // .Find(&products)
-	database.DB = database.DB.Scopes(util.Paginate(r)
+	database.DB = database.DB.Scopes(util.Paginate(r))
 
-)
+	database.DB.Find(&products)
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: products, Status: "success"})
 }
