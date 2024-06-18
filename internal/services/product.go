@@ -106,8 +106,8 @@ func GetAllProductsHandler(w http.ResponseWriter, r *http.Request) {
 	sortBy := r.URL.Query().Get("sort_by")
 
 	// pagination
-	page := r.URL.Query().Get("page")
-	pageSize := r.URL.Query().Get("page_size")
+	// page := r.URL.Query().Get("page")
+	// pageSize := r.URL.Query().Get("page_size")
 
 	if category != "" {
 		clauses = append(clauses, clause.Eq{Column: "category", Value: category})
@@ -147,25 +147,28 @@ func GetAllProductsHandler(w http.ResponseWriter, r *http.Request) {
 		}
 	}
 
-	newPage, err := strconv.ParseUint(page, 10, 8)
+	// newPage, err := strconv.ParseUint(page, 10, 8)
 
-	if err != nil {
-		log.Fatal(err)
-	}
+	// if err != nil {
+	// 	log.Fatal(err)
+	// }
 
-	newPageSize, _ := strconv.ParseUint(pageSize, 10, 8)
+	// newPageSize, _ := strconv.ParseUint(pageSize, 10, 8)
 
-	offset := (newPage - 1) * newPageSize
+	// offset := (newPage - 1) * newPageSize
 
-	intPageSize := int(newPageSize)
+	// intPageSize := int(newPageSize)
 
-	if pageSize != "" {
-		clauses = append(clauses, clause.Limit{Limit: &intPageSize, Offset: int(offset)})
-	}
+	// if pageSize != "" {
+	// 	clauses = append(clauses, clause.Limit{Limit: &intPageSize, Offset: int(offset)})
+	// }
 
 	fmt.Println(clauses)
 
-	database.DB.Where("deleted_at is null").Clauses(clauses...).Find(&products)
+	database.DB = database.DB.Where("deleted_at is null").Clauses(clauses...) // .Find(&products)
+	database.DB = database.DB.Scopes(util.Paginate(r)
+
+)
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: products, Status: "success"})
 }
