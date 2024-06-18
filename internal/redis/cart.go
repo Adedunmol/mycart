@@ -3,6 +3,7 @@ package redis
 import (
 	"context"
 	"strconv"
+	"time"
 
 	"github.com/Adedunmol/mycart/internal/logger"
 )
@@ -14,6 +15,13 @@ type CartItem struct {
 
 func AddItemToCart(userId int, itemId int, count int64) {
 	ctx := context.Background()
+
+	_, err := redisClient.Set(ctx, "shadowKey:cart:"+strconv.Itoa(userId), "", 1*time.Hour).Result()
+
+	if err != nil {
+		logger.Error.Println("error adding shadow key to cart", err)
+	}
+
 	var itemCount int64
 
 	if count == 0 {
@@ -22,7 +30,7 @@ func AddItemToCart(userId int, itemId int, count int64) {
 		itemCount = count
 	}
 
-	_, err := redisClient.HIncrBy(ctx, "cart:"+strconv.Itoa(userId), strconv.Itoa(itemId), itemCount).Result()
+	_, err = redisClient.HIncrBy(ctx, "cart:"+strconv.Itoa(userId), strconv.Itoa(itemId), itemCount).Result()
 
 	if err != nil {
 		logger.Error.Println("error adding item to cart", err)
@@ -95,15 +103,15 @@ func RemoveItemFromCart(userId int, itemId int) {
 
 func DeleteCart(userId int) {
 	ctx := context.Background()
-	_, err := redisClient.Exists(ctx, "cart:"+strconv.Itoa(userId)).Result()
+	result, err := redisClient.Exists(ctx, "cart:"+strconv.Itoa(userId)).Result()
 
 	if err != nil {
 		logger.Error.Println("error getting cart", err)
 	}
 
-	// if result == nil {
-
-	// }
+	if result == 0 {
+		logger.Error.Printf("cart %d does not exist", userId)
+	}
 
 	_, err = redisClient.Del(ctx, "cart:"+strconv.Itoa(userId)).Result()
 
