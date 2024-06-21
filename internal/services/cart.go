@@ -8,6 +8,7 @@ import (
 
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/models"
+	"github.com/Adedunmol/mycart/internal/redis"
 	"github.com/Adedunmol/mycart/internal/util"
 )
 
@@ -104,6 +105,33 @@ func AddToCartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: cart, Status: "success"})
+}
+
+func AddToRedisCartHandler(w http.ResponseWriter, r *http.Request) {
+	productID := r.URL.Query().Get("product_id")
+	quantity := r.URL.Query().Get("quantity")
+
+	username := r.Context().Value("username")
+
+	if username == nil {
+		util.RespondWithJSON(w, http.StatusUnauthorized, "Not authorized")
+		return
+	}
+
+	var foundUser models.User
+
+	result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		return
+	}
+
+	newProductID, _ := strconv.Atoi(productID)
+	newQuantity, _ := strconv.Atoi(quantity)
+	redis.AddItemToCart(int(foundUser.ID), int(newProductID), int64(newQuantity))
+
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "Item added to cart successfully", Data: nil, Status: "success"})
 }
 
 func RemoveFromCartHandler(w http.ResponseWriter, r *http.Request) {
