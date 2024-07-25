@@ -52,6 +52,7 @@ func Init(redisAddress string) {
 				_ = GetCart(userId)
 
 				// write cart data to postgres
+				WriteCartToDB(userId)
 
 				DeleteCart(userId)
 			}
