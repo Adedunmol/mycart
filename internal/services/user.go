@@ -219,6 +219,23 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	resData := Response{Token: accessToken, Expiration: time.Duration(util.ACCESS_TOKEN_EXPIRATION.Seconds())}
 
 	http.SetCookie(w, &cookie)
+
+	cartUpdateTask, err := tasks.NewCartUpdateTask(int(foundUser.ID))
+
+	if err != nil {
+		logger.Error.Printf("Could not create task for: %d", foundUser.ID)
+		logger.Error.Println(err)
+	}
+
+	client := tasks.GetClient()
+
+	_, err = client.Enqueue(cartUpdateTask)
+
+	if err != nil {
+		logger.Error.Printf("Could not enqueue task for: %d", foundUser.ID)
+		logger.Error.Println(err)
+	}
+
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: resData, Status: "success"})
 }
 
