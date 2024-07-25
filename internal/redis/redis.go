@@ -63,3 +63,9 @@ func Init(redisAddress string) {
 func GetClient() *redis.Client {
 	return redisClient
 }
+
+func Close() {
+	if redisClient != nil {
+		redisClient.Close()
+	}
+}
