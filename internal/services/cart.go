@@ -127,12 +127,6 @@ func AddToRedisCartHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	cart := redis.GetCart(int(foundUser.ID))
-
-	if len(cart) <= 0 {
-		redis.UpdateCartFromDB(int(foundUser.ID))
-	}
-
 	newProductID, _ := strconv.Atoi(productID)
 	newQuantity, _ := strconv.Atoi(quantity)
 	redis.AddItemToCart(int(foundUser.ID), int(newProductID), int64(newQuantity))
