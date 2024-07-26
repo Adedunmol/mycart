@@ -23,14 +23,14 @@ func LoadConfig(path string) error {
 
 	err := viper.ReadInConfig()
 	if err != nil {
-		logger.Error.Println(err)
-		logger.Error.Fatal("Could not load env file")
+		logger.Logger.Error(err.Error())
+		logger.Logger.Error("Could not load env file")
 		return err
 	}
 
 	err = viper.Unmarshal(&EnvConfig)
 	if err != nil {
-		logger.Error.Fatal("Could not unmarshal env file")
+		logger.Logger.Error("Could not unmarshal env file")
 		return err
 	}
 

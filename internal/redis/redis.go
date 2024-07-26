@@ -27,7 +27,8 @@ func Init(redisAddress string) {
 		_, err := redisClient.Do(context.Background(), "CONFIG", "SET", "notify-keyspace-events", "KEA").Result()
 
 		if err != nil {
-			logger.Error.Println("error setting up publish event", err)
+			logger.Logger.Error("error setting up publish event")
+			logger.Logger.Error(err.Error())
 		}
 
 		// subscribe to events published in the keyevent channel, specifically for expired events
@@ -37,7 +38,7 @@ func Init(redisAddress string) {
 			message, err := pubsub.ReceiveMessage(context.Background())
 
 			if err != nil {
-				logger.Error.Println("error receiving messages from pub/sub channel")
+				logger.Logger.Error("error receiving messages from pub/sub channel")
 			}
 
 			fmt.Printf("Keyspace event recieved %v  \n", message.String())

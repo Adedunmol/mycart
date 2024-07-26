@@ -29,7 +29,7 @@ func CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err == util.ErrDecode {
-			logger.Error.Println(err)
+			logger.Logger.Error(err.Error())
 			util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Status: "error", Message: "request body needed", Data: nil})
 			return
 		}

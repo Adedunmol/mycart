@@ -21,13 +21,14 @@ func InitDB() {
 	}
 
 	if err != nil {
-		customLogger.Error.Fatal("error connecting to db: %w", err)
+		customLogger.Logger.Error("error connecting to db: ")
+		customLogger.Logger.Error(err.Error())
 	}
 
 	if config.EnvConfig.Environment != "test" {
 		DB.Logger = logger.Default.LogMode(logger.Info)
 
-		customLogger.Info.Println("Running migrations")
+		customLogger.Logger.Info("Running migrations")
 	}
 
 	DB.AutoMigrate(&models.User{}, &models.Role{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{})

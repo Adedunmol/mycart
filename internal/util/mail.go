@@ -31,7 +31,7 @@ func SendMail(to string, subject string, html string, plain string) {
 	d := gomail.NewDialer("sandbox.smtp.mailtrap.io", 587, config.EnvConfig.EmailUsername, config.EnvConfig.EmailPassword)
 
 	if err := d.DialAndSend(m); err != nil {
-		logger.Error.Println("could not send mail")
+		logger.Logger.Error("could not send mail")
 	}
 }
 
@@ -50,25 +50,25 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 	case "verification":
 		html, err = html.ParseFiles("../email-templates/verification/verification.html")
 		if err != nil {
-			logger.Error.Println("could not parse html file")
+			logger.Logger.Error("could not parse html file")
 			return
 		}
 
 		text, err = text.ParseFiles("../email-templates/verification/verification.txt")
 		if err != nil {
-			logger.Error.Println("could not parse text file")
+			logger.Logger.Error("could not parse text file")
 			return
 		}
 	case "purchase":
 		html, err = html.ParseFiles("../email-templates/verification/purchase.html")
 		if err != nil {
-			logger.Error.Println("could not parse html file")
+			logger.Logger.Error("could not parse html file")
 			return
 		}
 
 		text, err = text.ParseFiles("../email-templates/verification/purchase.txt")
 		if err != nil {
-			logger.Error.Println("could not parse text file")
+			logger.Logger.Error("could not parse text file")
 			return
 		}
 	}
@@ -89,6 +89,6 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 	d := gomail.NewDialer("sandbox.smtp.mailtrap.io", 587, config.EnvConfig.EmailUsername, config.EnvConfig.EmailPassword)
 
 	if err := d.DialAndSend(m); err != nil {
-		logger.Error.Println("could not send mail")
+		logger.Logger.Error("could not send mail")
 	}
 }

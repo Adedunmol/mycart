@@ -46,7 +46,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err == util.ErrDecode {
-			logger.Error.Println(err)
+			logger.Logger.Error(err.Error())
 			util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Status: "error", Message: "request body needed", Data: nil})
 			return
 		}
@@ -65,8 +65,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if result.Error != nil {
-		logger.Error.Println("error looking for the role")
-		logger.Error.Println(result.Error)
+		logger.Logger.Error("error looking for the role")
+		logger.Logger.Error(result.Error.Error())
 		util.RespondWithJSON(w, http.StatusInternalServerError, "error looking a role")
 		return
 	}
@@ -74,8 +74,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(data.Password), 14)
 
 	if err != nil {
-		logger.Info.Println("could not hash password")
-		logger.Error.Println(err)
+		logger.Logger.Error("could not hash password")
+		logger.Logger.Error(err.Error())
 		util.RespondWithJSON(w, http.StatusInternalServerError, "could not hash password")
 		return
 	}
@@ -92,7 +92,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	result = database.DB.Create(&user)
 
 	if result.Error != nil {
-		logger.Error.Println(result.Error)
+		logger.Logger.Error(result.Error.Error())
 		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "error creating user", Data: nil, Status: "error"})
 		return
 	}
@@ -101,8 +101,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	hashedOtp, err := bcrypt.GenerateFromPassword([]byte(strconv.Itoa(verificationCode)), 14)
 
 	if err != nil {
-		logger.Error.Println("could not hash verification code")
-		logger.Error.Println(err)
+		logger.Logger.Error("could not hash verification code")
+		logger.Logger.Error(err.Error())
 		util.RespondWithJSON(w, http.StatusInternalServerError, "Status internal server error")
 		return
 	}
@@ -116,7 +116,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	result = database.DB.Create(&otp)
 
 	if result.Error != nil {
-		logger.Error.Println(result.Error)
+		logger.Logger.Error(result.Error.Error())
 		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "error creating otp", Data: nil, Status: "error"})
 		return
 	}
@@ -133,8 +133,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		})
 
 	if err != nil {
-		logger.Error.Printf("Could not create task for: %d", user.ID)
-		logger.Error.Println(err)
+		logger.Logger.Error("could not create task for: %d", user.ID)
+		logger.Logger.Error(err.Error())
 	}
 
 	client := tasks.GetClient()
@@ -142,8 +142,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = client.Enqueue(emailTask)
 
 	if err != nil {
-		logger.Error.Printf("Could not enqueue task for: %d", user.ID)
-		logger.Error.Println(err)
+		logger.Logger.Error("could not enqueue task for: %d", user.ID)
+		logger.Logger.Error(err.Error())
 	}
 
 	// util.SendMailWithTemplate("verification", user.Email, "Verify your account", )
@@ -168,7 +168,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err == util.ErrDecode {
-			logger.Error.Println(err)
+			logger.Logger.Error(err.Error())
 			util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Status: "error", Message: "request body needed", Data: nil})
 			return
 		}
@@ -193,7 +193,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	accessToken, err := util.GenerateToken(foundUser.Username, util.ACCESS_TOKEN_EXPIRATION)
 
 	if err != nil {
-		logger.Error.Println(err)
+		logger.Logger.Error(err.Error())
 		util.RespondWithJSON(w, http.StatusInternalServerError, "Unable to generate token")
 		return
 	}
@@ -223,8 +223,8 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	cartUpdateTask, err := tasks.NewCartUpdateTask(int(foundUser.ID))
 
 	if err != nil {
-		logger.Error.Printf("Could not create task for: %d", foundUser.ID)
-		logger.Error.Println(err)
+		logger.Logger.Error("could not create task for: %d", foundUser.ID)
+		logger.Logger.Error(err.Error())
 	}
 
 	client := tasks.GetClient()
@@ -232,8 +232,8 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = client.Enqueue(cartUpdateTask)
 
 	if err != nil {
-		logger.Error.Printf("Could not enqueue task for: %d", foundUser.ID)
-		logger.Error.Println(err)
+		logger.Logger.Error("could not enqueue task for: %d", foundUser.ID)
+		logger.Logger.Error(err.Error())
 	}
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: resData, Status: "success"})
@@ -282,8 +282,8 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	cartUpdateTask, err := tasks.NewCartUpdateTask(int(foundUser.ID))
 
 	if err != nil {
-		logger.Error.Printf("Could not create task for: %d", foundUser.ID)
-		logger.Error.Println(err)
+		logger.Logger.Error("Could not create task for: %d", foundUser.ID)
+		logger.Logger.Error(err.Error())
 	}
 
 	client := tasks.GetClient()
@@ -291,8 +291,8 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = client.Enqueue(cartUpdateTask)
 
 	if err != nil {
-		logger.Error.Printf("Could not enqueue task for: %d", foundUser.ID)
-		logger.Error.Println(err)
+		logger.Logger.Error("Could not enqueue task for: %d", foundUser.ID)
+		logger.Logger.Error(err.Error())
 	}
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "", Data: data, Status: "success"})
@@ -342,7 +342,7 @@ func VerifyUserHandler(w http.ResponseWriter, r *http.Request) {
 		}
 
 		if err == util.ErrDecode {
-			logger.Error.Println(err)
+			logger.Logger.Error(err.Error())
 			util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Status: "error", Message: "request body needed", Data: nil})
 			return
 		}
