@@ -10,6 +10,7 @@ import (
 	"github.com/Adedunmol/mycart/internal/routes"
 	"github.com/Adedunmol/mycart/internal/util"
 	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/go-chi/httplog/v2"
 )
 
@@ -36,6 +37,7 @@ func Run(logger *httplog.Logger) {
 
 	r := chi.NewRouter()
 
+	r.Use(middleware.Logger)
 	r.Use(httplog.RequestLogger(logger))
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
