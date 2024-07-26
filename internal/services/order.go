@@ -105,5 +105,23 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	cartDeleteTask, err := tasks.NewCartDeleteTask(int(foundUser.ID))
+
+	if err != nil {
+		msg := fmt.Sprintf("could not create cart delete task for: %d", cart.ID)
+
+		logger.Logger.Error(msg)
+		logger.Logger.Error(err.Error())
+	}
+
+	_, err = client.Enqueue(cartDeleteTask)
+
+	if err != nil {
+		msg := fmt.Sprintf("could not enqueue delete task for: %d", cart.ID)
+
+		logger.Logger.Error(msg)
+		logger.Logger.Error(err.Error())
+	}
+
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: order, Status: "success"})
 }
