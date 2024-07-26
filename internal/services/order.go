@@ -82,7 +82,9 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 	invoiceTask, err := tasks.NewInvoiceGenerationTask(int(foundUser.ID), int(cart.ID), int(foundUser.ID), struct{}{})
 
 	if err != nil {
-		logger.Logger.Error("Could not create task for: %d", cart.ID)
+		msg := fmt.Sprintf("could not create task for: %d", cart.ID)
+
+		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
 	}
 
@@ -91,7 +93,9 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = client.Enqueue(invoiceTask)
 
 	if err != nil {
-		logger.Logger.Error("Could not enqueue task for: %d", cart.ID)
+		msg := fmt.Sprintf("could not enqueue task for: %d", cart.ID)
+
+		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
 	}
 

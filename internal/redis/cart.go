@@ -86,20 +86,25 @@ func RemoveItemFromCart(userId int, itemId int) {
 	}
 
 	if !itemExists {
-		logger.Logger.Info("item %d does not exist in cart", itemId)
+		msg := fmt.Sprintf("item %d does not exist in cart", itemId)
+		logger.Logger.Info(msg)
 	}
 
 	_, err = redisClient.HIncrBy(ctx, "cart:"+strconv.Itoa(userId), strconv.Itoa(itemId), -1).Result()
 
 	if err != nil {
-		logger.Logger.Error("error removing item %d from cart", itemId)
+		msg := fmt.Sprintf("error removing item %d from cart", itemId)
+
+		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
 	}
 
 	itemCount, err := redisClient.HGet(ctx, "cart:"+strconv.Itoa(userId), strconv.Itoa(itemId)).Result()
 
 	if err != nil {
-		logger.Logger.Error("error getting item %d from cart", itemId)
+		msg := fmt.Sprintf("error getting item %d from cart", itemId)
+
+		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
 	}
 
@@ -108,7 +113,9 @@ func RemoveItemFromCart(userId int, itemId int) {
 		_, err := redisClient.HDel(ctx, "cart:"+strconv.Itoa(userId), strconv.Itoa(itemId)).Result()
 
 		if err != nil {
-			logger.Logger.Error("error deleting item %d from cart", itemId)
+			msg := fmt.Sprintf("error deleting item %d from cart", itemId)
+
+			logger.Logger.Error(msg)
 			logger.Logger.Error(err.Error())
 		}
 	}
@@ -124,13 +131,17 @@ func DeleteCart(userId int) {
 	}
 
 	if result == 0 {
-		logger.Logger.Error("cart %d does not exist", userId)
+		msg := fmt.Sprintf("cart %d does not exist", userId)
+
+		logger.Logger.Error(msg)
 	}
 
 	_, err = redisClient.Del(ctx, "cart:"+strconv.Itoa(userId)).Result()
 
 	if err != nil {
-		logger.Logger.Error("error deleting cart %d", userId)
+		msg := fmt.Sprintf("error deleting cart %d", userId)
+
+		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
 	}
 }

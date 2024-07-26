@@ -133,7 +133,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 		})
 
 	if err != nil {
-		logger.Logger.Error("could not create task for: %d", user.ID)
+		msg := fmt.Sprintf("could not create task for: %d", user.ID)
+		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
 	}
 
@@ -142,7 +143,8 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = client.Enqueue(emailTask)
 
 	if err != nil {
-		logger.Logger.Error("could not enqueue task for: %d", user.ID)
+		msg := fmt.Sprintf("could not enqueue task for: %d", user.ID)
+		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
 	}
 
@@ -223,7 +225,8 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	cartUpdateTask, err := tasks.NewCartUpdateTask(int(foundUser.ID))
 
 	if err != nil {
-		logger.Logger.Error("could not create task for: %d", foundUser.ID)
+		msg := fmt.Sprintf("could not create task for: %d", foundUser.ID)
+		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
 	}
 
@@ -232,7 +235,8 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = client.Enqueue(cartUpdateTask)
 
 	if err != nil {
-		logger.Logger.Error("could not enqueue task for: %d", foundUser.ID)
+		msg := fmt.Sprintf("could not enqueue task for: %d", foundUser.ID)
+		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
 	}
 
@@ -282,7 +286,8 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	cartUpdateTask, err := tasks.NewCartUpdateTask(int(foundUser.ID))
 
 	if err != nil {
-		logger.Logger.Error("Could not create task for: %d", foundUser.ID)
+		msg := fmt.Sprintf("Could not create task for: %d", foundUser.ID)
+		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
 	}
 
@@ -291,7 +296,8 @@ func RefreshTokenHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = client.Enqueue(cartUpdateTask)
 
 	if err != nil {
-		logger.Logger.Error("Could not enqueue task for: %d", foundUser.ID)
+		msg := fmt.Sprintf("could not enqueue task for: %d", foundUser.ID)
+		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
 	}
 
