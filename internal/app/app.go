@@ -13,10 +13,10 @@ import (
 	"github.com/go-chi/httplog/v2"
 )
 
-var dbConnOnce *sync.Once
+var dbConnOnce sync.Once
 
 func init() {
-	_, err := config.LoadConfig("../..")
+	_, err := config.LoadConfig(".")
 	if err != nil {
 		log.Fatal("Error loading .env file: ", err)
 	}
