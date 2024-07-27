@@ -43,6 +43,13 @@ func AddItemToCart(userId int, itemId int, count int64) {
 		logger.Logger.Error("error adding item to cart")
 		logger.Logger.Error(err.Error())
 	}
+
+	_, err = redisClient.HSet(ctx, "cart:"+strconv.Itoa(userId)+".meta", "updatedAt", time.Now().Unix()).Result()
+
+	if err != nil {
+		logger.Logger.Error("error adding cart's updatedAt to redis")
+		logger.Logger.Error(err.Error())
+	}
 }
 
 func GetCart(userId int) []CartItem {
@@ -73,6 +80,44 @@ func GetCart(userId int) []CartItem {
 	}
 
 	return cartItems
+}
+
+func GetCartAndUpdatedAt(userId int) ([]CartItem, string) {
+
+	ctx := context.Background()
+
+	cart, err := redisClient.HGetAll(ctx, "cart:"+strconv.Itoa(userId)).Result()
+
+	if err != nil {
+		logger.Logger.Error("error getting cart")
+		logger.Logger.Error(err.Error())
+		return nil, ""
+	}
+
+	updatedAt, err := redisClient.HGet(ctx, "cart:"+strconv.Itoa(userId)+".meta", "updatedAt").Result()
+
+	if err != nil {
+		logger.Logger.Error("error getting cart's updatedAt")
+		logger.Logger.Error(err.Error())
+		return nil, ""
+	}
+
+	if len(cart) == 0 {
+		logger.Logger.Info("cart is empty")
+		return nil, ""
+	}
+
+	var cartItems []CartItem
+
+	for key, val := range cart {
+		itemId, _ := strconv.Atoi(key)
+		count, _ := strconv.Atoi(val)
+
+		cartItem := CartItem{ItemId: itemId, Count: count}
+		cartItems = append(cartItems, cartItem)
+	}
+
+	return cartItems, updatedAt
 }
 
 func RemoveItemFromCart(userId int, itemId int) {
