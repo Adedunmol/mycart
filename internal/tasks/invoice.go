@@ -9,6 +9,7 @@ import (
 
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/models"
+	"github.com/Adedunmol/mycart/internal/redis"
 	"github.com/Adedunmol/mycart/internal/util"
 	"github.com/hibiken/asynq"
 )
@@ -71,6 +72,9 @@ func HandleInvoiceGenerationTask(ctx context.Context, t *asynq.Task) error {
 
 	// send receipt to user
 	util.SendMailWithTemplate("purchase", user.Email, "Successful purchase", struct{}{}, filePath)
+
+	// clear user cart from redis and postgres
+	redis.ClearCartAndDB(int(p.UserID))
 
 	return nil
 }
