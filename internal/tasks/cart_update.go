@@ -5,7 +5,10 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"strconv"
 
+	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/redis"
 	"github.com/hibiken/asynq"
 )
@@ -34,6 +37,19 @@ func HandleCartUpdateTask(ctx context.Context, t *asynq.Task) error {
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
 	}
 	log.Printf("Updating cart for User: user_id=%ds", p.UserID)
+
+	_, updatedAt := redis.GetCartAndUpdatedAt(int(p.UserID))
+	newUpdatedAt, _ := strconv.Atoi(updatedAt)
+
+	var cart models.Cart
+
+	database.DB.First(&cart, p.UserID)
+
+	// if the updated at of the redis cart is greater than that of the one in postgres
+	// dont bother to update from postgres
+	if int64(newUpdatedAt) > cart.UpdatedAt.Unix() {
+		return nil
+	}
 
 	redis.UpdateCartFromDB(int(p.UserID))
 
