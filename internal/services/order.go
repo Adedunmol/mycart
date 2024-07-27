@@ -7,20 +7,12 @@ import (
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/Adedunmol/mycart/internal/models"
+	"github.com/Adedunmol/mycart/internal/redis"
 	"github.com/Adedunmol/mycart/internal/tasks"
 	"github.com/Adedunmol/mycart/internal/util"
 )
 
 func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
-	cartID := r.URL.Query().Get("cart_id")
-
-	var cart models.Cart
-
-	if cartID == "" {
-		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no cart id sent in the query param", Data: nil, Status: "error"})
-		return
-	}
-
 	username := r.Context().Value("username")
 
 	if username == nil {
@@ -37,9 +29,27 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	result = database.DB.Preload("CartItems").First(&cart, cartID)
+	updatedCart := redis.GetCart(int(foundUser.ID))
+	err := redis.WriteCartToDB(int(foundUser.ID))
 
-	if len(cart.CartItems) < 1 {
+	if err != nil {
+		logger.Logger.Error(err.Error())
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "error updating cart", Data: nil, Status: "error"})
+		return
+	}
+
+	// cartID := r.URL.Query().Get("cart_id")
+
+	// var cart models.Cart
+
+	// if cartID == "" {
+	// 	util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no cart id sent in the query param", Data: nil, Status: "error"})
+	// 	return
+	// }
+
+	// result = database.DB.Preload("CartItems").First(&cart, cartID)
+
+	if len(updatedCart) < 1 {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "cart is empty", Data: nil, Status: "error"})
 	}
 
@@ -50,7 +60,7 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 
 	order := models.Order{
 		BuyerID: uint8(foundUser.ID),
-		CartID:  uint8(cart.ID),
+		CartID:  uint8(foundUser.ID),
 	}
 
 	result = database.DB.Create(&order)
@@ -60,11 +70,19 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	for _, product := range cart.CartItems {
+	for _, product := range updatedCart {
 		var foundProduct models.Product
-		database.DB.First(&foundProduct, product.ID)
+		database.DB.First(&foundProduct, product.ItemId)
 
-		newQuantity := foundProduct.Quantity - product.Quantity // (quantity in store - quantity bought)
+		if product.Count > int(foundProduct.Quantity) {
+			util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "product quantity more than what's available", Data: struct {
+				Available int
+				Order     int
+			}{Available: int(foundProduct.Quantity), Order: product.Count}, Status: "error"})
+			return
+		}
+
+		newQuantity := foundProduct.Quantity - uint(product.Count) // (quantity in store - quantity bought)
 
 		result = database.DB.Model(&product).Updates(models.Product{
 			Quantity: newQuantity,
@@ -79,10 +97,10 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 
 	// generate receipt
 	// _, err := util.GeneratePdf(cart, foundUser)
-	invoiceTask, err := tasks.NewInvoiceGenerationTask(int(foundUser.ID), int(cart.ID), int(foundUser.ID), struct{}{})
+	invoiceTask, err := tasks.NewInvoiceGenerationTask(int(foundUser.ID), int(foundUser.ID), int(foundUser.ID), struct{}{})
 
 	if err != nil {
-		msg := fmt.Sprintf("could not create task for: %d", cart.ID)
+		msg := fmt.Sprintf("could not create task for: %d", foundUser.ID)
 
 		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
@@ -93,7 +111,7 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 	_, err = client.Enqueue(invoiceTask)
 
 	if err != nil {
-		msg := fmt.Sprintf("could not enqueue task for: %d", cart.ID)
+		msg := fmt.Sprintf("could not enqueue task for: %d", foundUser.ID)
 
 		logger.Logger.Error(msg)
 		logger.Logger.Error(err.Error())
@@ -103,24 +121,6 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 		fmt.Println(err)
 		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "unable to generate invoice", Data: nil, Status: "error"})
 		return
-	}
-
-	cartDeleteTask, err := tasks.NewCartDeleteTask(int(foundUser.ID))
-
-	if err != nil {
-		msg := fmt.Sprintf("could not create cart delete task for: %d", cart.ID)
-
-		logger.Logger.Error(msg)
-		logger.Logger.Error(err.Error())
-	}
-
-	_, err = client.Enqueue(cartDeleteTask)
-
-	if err != nil {
-		msg := fmt.Sprintf("could not enqueue delete task for: %d", cart.ID)
-
-		logger.Logger.Error(msg)
-		logger.Logger.Error(err.Error())
 	}
 
 	util.RespondWithJSON(w, http.StatusCreated, APIResponse{Message: "", Data: order, Status: "success"})
