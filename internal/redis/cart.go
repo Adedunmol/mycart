@@ -88,6 +88,8 @@ func GetCartAndUpdatedAt(userId int) ([]CartItem, string) {
 
 	cart, err := redisClient.HGetAll(ctx, "cart:"+strconv.Itoa(userId)).Result()
 
+	fmt.Println("cart: ", cart)
+
 	if err != nil {
 		logger.Logger.Error("error getting cart")
 		logger.Logger.Error(err.Error())
@@ -95,6 +97,8 @@ func GetCartAndUpdatedAt(userId int) ([]CartItem, string) {
 	}
 
 	updatedAt, err := redisClient.HGet(ctx, "cart:"+strconv.Itoa(userId)+".meta", "updatedAt").Result()
+
+	fmt.Println("updatedAt: ", updatedAt)
 
 	if err != nil {
 		logger.Logger.Error("error getting cart's updatedAt")
@@ -273,6 +277,8 @@ func UpdateCartFromDB(userId int) {
 	if len(cart.CartItems) < 1 {
 		return
 	}
+
+	fmt.Println(cart)
 
 	for _, product := range cart.CartItems {
 		var foundProduct models.Product

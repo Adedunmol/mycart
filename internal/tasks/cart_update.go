@@ -8,6 +8,7 @@ import (
 	"strconv"
 
 	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/redis"
 	"github.com/hibiken/asynq"
@@ -39,6 +40,12 @@ func HandleCartUpdateTask(ctx context.Context, t *asynq.Task) error {
 	log.Printf("Updating cart for User: user_id=%ds", p.UserID)
 
 	_, updatedAt := redis.GetCartAndUpdatedAt(int(p.UserID))
+
+	if updatedAt == "" {
+		logger.Logger.Info("updated at not set for the current cart")
+		return nil
+	}
+
 	newUpdatedAt, _ := strconv.Atoi(updatedAt)
 
 	var cart models.Cart
