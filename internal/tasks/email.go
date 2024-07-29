@@ -29,7 +29,7 @@ func NewEmailDeliveryTask(template string, subject string, userID int, data inte
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Creating mail task for User: user_id=%ds", userID)
+	log.Printf("Creating mail task for User: user_id=%d", userID)
 
 	return asynq.NewTask(TypeEmailDelivery, payload), nil
 }
@@ -39,7 +39,7 @@ func HandleEmailDeliveryTask(ctx context.Context, t *asynq.Task) error {
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
 	}
-	log.Printf("Sending Email to User: user_id=%ds", p.UserID)
+	log.Printf("Sending Email to User: user_id=%d", p.UserID)
 
 	var user models.User
 

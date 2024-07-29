@@ -27,7 +27,7 @@ func NewCartUpdateTask(userID int) (*asynq.Task, error) {
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Creating cart update task for User: user_id=%ds", userID)
+	log.Printf("Creating cart update task for User: user_id=%d", userID)
 
 	return asynq.NewTask(TypeCartUpdate, payload), nil
 }
@@ -37,7 +37,7 @@ func HandleCartUpdateTask(ctx context.Context, t *asynq.Task) error {
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
 	}
-	log.Printf("Updating cart for User: user_id=%ds", p.UserID)
+	log.Printf("Updating cart for User: user_id=%d", p.UserID)
 
 	_, updatedAt := redis.GetCartAndUpdatedAt(int(p.UserID))
 

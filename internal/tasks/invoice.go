@@ -30,7 +30,7 @@ func NewInvoiceGenerationTask(invoiceID int, cartID int, userID int, data interf
 	if err != nil {
 		return nil, err
 	}
-	log.Printf("Creating invoice task for Invoice: invoice_id=%ds", invoiceID)
+	log.Printf("Creating invoice task for Invoice: invoice_id=%d", invoiceID)
 
 	return asynq.NewTask(TypeInvoiceGeneration, payload), nil
 }
@@ -40,7 +40,7 @@ func HandleInvoiceGenerationTask(ctx context.Context, t *asynq.Task) error {
 	if err := json.Unmarshal(t.Payload(), &p); err != nil {
 		return fmt.Errorf("json.Unmarshal failed: %v: %w", err, asynq.SkipRetry)
 	}
-	log.Printf("Generating invoice for: invoice_id=%ds", p.InvoiceID)
+	log.Printf("Generating invoice for: invoice_id=%d", p.InvoiceID)
 
 	var user models.User
 
