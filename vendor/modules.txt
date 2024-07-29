@@ -35,9 +35,6 @@ github.com/gabriel-vasile/mimetype/internal/magic
 ## explicit; go 1.14
 github.com/go-chi/chi/v5
 github.com/go-chi/chi/v5/middleware
-# github.com/go-chi/httplog/v2 v2.0.8
-## explicit; go 1.21
-github.com/go-chi/httplog/v2
 # github.com/go-openapi/jsonpointer v0.19.5
 ## explicit; go 1.13
 github.com/go-openapi/jsonpointer
@@ -76,6 +73,9 @@ github.com/golang/protobuf/ptypes/timestamp
 # github.com/google/uuid v1.6.0
 ## explicit
 github.com/google/uuid
+# github.com/gorilla/mux v1.8.0
+## explicit; go 1.12
+github.com/gorilla/mux
 # github.com/hashicorp/hcl v1.0.0
 ## explicit
 github.com/hashicorp/hcl
@@ -98,6 +98,9 @@ github.com/hibiken/asynq/internal/log
 github.com/hibiken/asynq/internal/proto
 github.com/hibiken/asynq/internal/rdb
 github.com/hibiken/asynq/internal/timeutil
+# github.com/hibiken/asynqmon v0.7.2
+## explicit; go 1.16
+github.com/hibiken/asynqmon
 # github.com/jackc/pgpassfile v1.0.0
 ## explicit; go 1.12
 github.com/jackc/pgpassfile

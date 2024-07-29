@@ -19,6 +19,7 @@ var (
 func Init(redisAddress string) error {
 	var err error
 	once.Do(func() {
+		logger.Logger.Info("setting up connection to redis")
 		redisClient = redis.NewClient(&redis.Options{
 			Addr:     redisAddress,
 			Password: "",
@@ -69,6 +70,7 @@ func GetClient() *redis.Client {
 }
 
 func Close() {
+	logger.Logger.Info("closing connection to redis")
 	if redisClient != nil {
 		redisClient.Close()
 	}

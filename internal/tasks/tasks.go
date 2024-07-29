@@ -3,6 +3,7 @@ package tasks
 import (
 	"sync"
 
+	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/hibiken/asynq"
 )
 
@@ -13,11 +14,16 @@ var (
 
 func Init(redisAddress string) {
 	once.Do(func() {
-		client = asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddress})
+		logger.Logger.Info("setting up connection for asynq queue")
+
+		client = asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddress, Password: "", DB: 0})
+
 	})
 }
 
 func Close() {
+	logger.Logger.Info("closing connection for asynq queue")
+
 	if client != nil {
 		client.Close()
 	}

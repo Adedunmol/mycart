@@ -10,9 +10,11 @@ import (
 const redisAddress = "127.0.0.1:6379"
 
 func main() {
-	logger.Logger.Info("app is running")
 
 	go tasks.Init(redisAddress)
+
+	go tasks.Run()
+
 	defer tasks.Close()
 
 	go redis.Init(redisAddress)

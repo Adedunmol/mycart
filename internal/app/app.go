@@ -34,11 +34,18 @@ func init() {
 }
 
 func Run() {
+	// h := asynqmon.New(asynqmon.Options{
+	// 	RootPath:     "/monitoring", // RootPath specifies the root for asynqmon app
+	// 	RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
+	// })
+
 	logger.Logger.Info("setting up routes")
 
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
+
+	// r.Handle(h.RootPath()+"/", h)
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 

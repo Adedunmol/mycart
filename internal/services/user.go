@@ -160,7 +160,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 		Expiration time.Duration `json:"expiration"`
 	}
 
-	data, problems, err := util.DecodeJSON[*schema.CreateUser](r)
+	data, problems, err := util.DecodeJSON[*schema.LoginUser](r)
 
 	if err != nil {
 
