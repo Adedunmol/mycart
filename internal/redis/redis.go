@@ -16,7 +16,8 @@ var (
 	once        sync.Once
 )
 
-func Init(redisAddress string) {
+func Init(redisAddress string) error {
+	var err error
 	once.Do(func() {
 		redisClient = redis.NewClient(&redis.Options{
 			Addr:     redisAddress,
@@ -24,7 +25,7 @@ func Init(redisAddress string) {
 			DB:       0,
 		})
 
-		_, err := redisClient.Do(context.Background(), "CONFIG", "SET", "notify-keyspace-events", "KEA").Result()
+		_, err = redisClient.Do(context.Background(), "CONFIG", "SET", "notify-keyspace-events", "KEA").Result()
 
 		if err != nil {
 			logger.Logger.Error("error setting up publish event")
@@ -59,6 +60,8 @@ func Init(redisAddress string) {
 			}
 		}
 	})
+
+	return err
 }
 
 func GetClient() *redis.Client {

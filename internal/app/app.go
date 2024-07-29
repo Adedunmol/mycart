@@ -7,11 +7,11 @@ import (
 
 	"github.com/Adedunmol/mycart/internal/config"
 	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/Adedunmol/mycart/internal/routes"
 	"github.com/Adedunmol/mycart/internal/util"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
-	"github.com/go-chi/httplog/v2"
 )
 
 var dbConnOnce sync.Once
@@ -23,7 +23,7 @@ func init() {
 	}
 
 	dbConnOnce.Do(func() {
-		database.InitDB()
+		err = database.InitDB()
 
 		if err != nil {
 			log.Panic(err)
@@ -33,12 +33,12 @@ func init() {
 	})
 }
 
-func Run(logger *httplog.Logger) {
+func Run() {
+	logger.Logger.Info("setting up routes")
 
 	r := chi.NewRouter()
 
 	r.Use(middleware.Logger)
-	r.Use(httplog.RequestLogger(logger))
 
 	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
 

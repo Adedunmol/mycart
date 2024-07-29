@@ -6,12 +6,11 @@ import (
 	"github.com/Adedunmol/mycart/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
 
-func InitDB() {
+func InitDB() error {
 	var err error
 
 	if config.EnvConfig.Environment == "test" {
@@ -23,13 +22,17 @@ func InitDB() {
 	if err != nil {
 		customLogger.Logger.Error("error connecting to db: ")
 		customLogger.Logger.Error(err.Error())
+
+		return err
 	}
 
 	if config.EnvConfig.Environment != "test" {
-		DB.Logger = logger.Default.LogMode(logger.Info)
+		// DB.Logger = logger.Default.LogMode(logger.Info)
 
 		customLogger.Logger.Info("Running migrations")
 	}
 
 	DB.AutoMigrate(&models.User{}, &models.Role{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{})
+
+	return nil
 }

@@ -13,7 +13,7 @@ var (
 
 func Init(redisAddress string) {
 	once.Do(func() {
-		client = asynq.NewClient((asynq.RedisClientOpt{Addr: redisAddress}))
+		client = asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddress})
 	})
 }
 
