@@ -63,20 +63,20 @@ func AuthMiddleware(handler http.Handler) http.Handler {
 		authHeader := r.Header.Get("Authorization")
 
 		if authHeader == "" {
-			RespondWithJSON(w, http.StatusUnauthorized, "No auth token in the header")
+			RespondWithJSON(w, http.StatusUnauthorized, APIResponse{Message: "No auth token in the header", Data: nil, Status: "error"})
 			return
 		}
 
 		tokenString := strings.Split(authHeader, " ")
 
 		if len(tokenString) != 2 {
-			RespondWithJSON(w, http.StatusUnauthorized, "Malformed token")
+			RespondWithJSON(w, http.StatusUnauthorized, APIResponse{Message: "Malformed token", Data: nil, Status: "error"})
 			return
 		}
 
 		username, err := DecodeToken(tokenString[1])
 		if err != nil || username == "" {
-			RespondWithJSON(w, http.StatusUnauthorized, "Bad token or token is expired")
+			RespondWithJSON(w, http.StatusUnauthorized, APIResponse{Message: "Bad token or token is expired", Data: nil, Status: "error"})
 			return
 		}
 
@@ -98,7 +98,7 @@ func RoleAuthorization(permissions ...uint8) func(handler http.Handler) http.Han
 			result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
 
 			if result.Error != nil {
-				RespondWithJSON(w, http.StatusUnauthorized, "Unauthorized")
+				RespondWithJSON(w, http.StatusUnauthorized, APIResponse{Message: "Unauthorized", Data: nil, Status: "error"})
 				return
 			}
 
@@ -109,7 +109,7 @@ func RoleAuthorization(permissions ...uint8) func(handler http.Handler) http.Han
 			for _, perm := range permissions {
 
 				if !role.HasPermission(uint8(perm)) {
-					RespondWithJSON(w, http.StatusForbidden, "Forbidden")
+					RespondWithJSON(w, http.StatusForbidden, APIResponse{Message: "Forbidden", Data: nil, Status: "error"})
 					return
 				}
 			}
