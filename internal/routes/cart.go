@@ -12,7 +12,8 @@ func CartsRoutes(r *chi.Mux) {
 
 	cartRouter.Use(util.AuthMiddleware)
 
-	cartRouter.Get("/", services.AddToCartHandler)
+	cartRouter.Get("/", services.GetCartHandler)
+	cartRouter.Post("/add-item", services.AddToRedisCartHandler)
 
 	r.Mount("/carts", cartRouter)
 }

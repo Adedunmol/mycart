@@ -128,10 +128,43 @@ func AddToRedisCartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	newProductID, _ := strconv.Atoi(productID)
+
+	var product models.Product
+	result = database.DB.First(&product, productID)
+
+	if result.Error != nil {
+		fmt.Println(result.Error)
+		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "product not found", Data: nil, Status: "error"})
+		return
+	}
+
 	newQuantity, _ := strconv.Atoi(quantity)
 	redis.AddItemToCart(int(foundUser.ID), int(newProductID), int64(newQuantity))
 
 	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "Item added to cart successfully", Data: nil, Status: "success"})
+}
+
+func GetCartHandler(w http.ResponseWriter, r *http.Request) {
+	username := r.Context().Value("username")
+
+	if username == nil {
+		util.RespondWithJSON(w, http.StatusUnauthorized, "Not authorized")
+		return
+	}
+
+	var foundUser models.User
+
+	result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		return
+	}
+
+	cart := redis.GetCart(int(foundUser.ID))
+
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "Cart retrieved successfully", Data: cart, Status: "success"})
+
 }
 
 func RemoveFromCartHandler(w http.ResponseWriter, r *http.Request) {
