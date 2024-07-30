@@ -22,7 +22,16 @@ type CartItem struct {
 func AddItemToCart(userId int, itemId int, count int64) {
 	ctx := context.Background()
 
-	_, err := redisClient.Set(ctx, "shadowKey:cart:"+strconv.Itoa(userId), "", 1*time.Hour).Result()
+	ttl, err := redisClient.TTL(ctx, "shadowKey:cart:"+strconv.Itoa(userId)).Result()
+
+	if err != nil {
+		logger.Logger.Error("error getting shadow key's TTL for cart")
+		logger.Logger.Error(err.Error())
+	}
+
+	if ttl.Nanoseconds() < 0 {
+		_, err = redisClient.Set(ctx, "shadowKey:cart:"+strconv.Itoa(userId), "", 1*time.Hour).Result()
+	}
 
 	if err != nil {
 		logger.Logger.Error("error adding shadow key to cart")
