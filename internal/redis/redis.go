@@ -48,15 +48,19 @@ func Init(redisAddress string) error {
 			key := message.Payload
 
 			if strings.Contains(key, "shadowKey") {
+				logger.Logger.Info("getting expired key")
 				key = strings.ReplaceAll(key, "shadowKey", "")
 				value := strings.Split(key, ":")
-				userId, _ := strconv.Atoi(value[1])
+				userId, _ := strconv.Atoi(value[2])
 
+				logger.Logger.Info("getting expired cart for user: ")
 				_ = GetCart(userId)
 
 				// write cart data to postgres
+				logger.Logger.Info("writing expired cart to db")
 				WriteCartToDB(userId)
 
+				logger.Logger.Info("deleting expired cart")
 				DeleteCart(userId)
 			}
 		}
