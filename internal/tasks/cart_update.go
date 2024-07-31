@@ -43,19 +43,13 @@ func HandleCartUpdateTask(ctx context.Context, t *asynq.Task) error {
 
 	fmt.Println("updated at cart update: ", updatedAt)
 
+	// cart's TTL has expired and the updatedAt key can't be accessed
 	if updatedAt == "" {
 		logger.Logger.Info("updated at not set for the current cart")
-
-		newUpdatedAt, _ := strconv.Atoi(updatedAt)
 
 		var cart models.Cart
 
 		database.DB.Where(&models.Cart{BuyerID: uint(p.UserID)}).First(&cart)
-
-		// if the updated at of the redis cart is greater than that of the one in postgres
-		// dont bother to update from postgres
-		fmt.Println("redis cart updated at: ", newUpdatedAt)
-		fmt.Println("db cart updated at: ", cart.UpdatedAt.Unix())
 
 		redis.UpdateCartFromDB(int(p.UserID))
 
@@ -70,8 +64,6 @@ func HandleCartUpdateTask(ctx context.Context, t *asynq.Task) error {
 
 	// if the updated at of the redis cart is greater than that of the one in postgres
 	// dont bother to update from postgres
-	fmt.Println("redis cart updated at: ", newUpdatedAt)
-	fmt.Println("db cart updated at: ", cart.UpdatedAt.Unix())
 	if int64(newUpdatedAt) > cart.UpdatedAt.Unix() {
 		return nil
 	}
