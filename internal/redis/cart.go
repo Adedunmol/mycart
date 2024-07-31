@@ -30,7 +30,7 @@ func AddItemToCart(userId int, itemId int, count int64) {
 	}
 
 	if ttl.Nanoseconds() < 0 {
-		_, err = redisClient.Set(ctx, "shadowKey:cart:"+strconv.Itoa(userId), "", time.Duration(1)*time.Minute).Result()
+		_, err = redisClient.Set(ctx, "shadowKey:cart:"+strconv.Itoa(userId), "", time.Duration(1)*time.Hour).Result()
 
 		if err != nil {
 			logger.Logger.Error("error adding shadow key to cart")
