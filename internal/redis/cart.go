@@ -215,7 +215,7 @@ func WriteCartToDB(userId int) error {
 
 		var cart models.Cart
 
-		result := database.DB.First(&cart, userId)
+		result := database.DB.Where(&models.Cart{BuyerID: uint(userId)}).First(&cart)
 
 		if result.Error != nil {
 			cart = models.Cart{
@@ -273,7 +273,7 @@ func WriteCartToDB(userId int) error {
 func UpdateCartFromDB(userId int) {
 	var cart models.Cart
 
-	result := database.DB.Preload("CartItems").First(&cart, userId)
+	result := database.DB.Preload("CartItems").Where(&models.Cart{BuyerID: uint(userId)}).First(&cart)
 
 	if result.Error != nil {
 		cart = models.Cart{
@@ -293,7 +293,7 @@ func UpdateCartFromDB(userId int) {
 		var foundProduct models.Product
 		database.DB.First(&foundProduct, product.ID)
 
-		AddItemToCart(userId, int(foundProduct.ID), int64(product.Quantity))
+		AddItemToCart(userId, int(product.ID), int64(product.Quantity))
 	}
 
 }
@@ -303,7 +303,7 @@ func ClearCartAndDB(userId int) {
 
 	var cart models.Cart
 
-	result := database.DB.Preload("CartItems").First(&cart, userId)
+	result := database.DB.Preload("CartItems").Where(&models.Cart{BuyerID: uint(userId)}).First(&cart)
 
 	if result.Error != nil {
 		return
