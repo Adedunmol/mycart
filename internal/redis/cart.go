@@ -133,7 +133,7 @@ func GetCartAndUpdatedAt(userId int) ([]CartItem, string) {
 	return cartItems, updatedAt
 }
 
-func RemoveItemFromCart(userId int, itemId int) {
+func RemoveItemFromCart(userId int, itemId int, count int64) {
 	ctx := context.Background()
 	itemExists, err := redisClient.HExists(ctx, "cart:"+strconv.Itoa(userId), strconv.Itoa(itemId)).Result()
 
@@ -148,7 +148,7 @@ func RemoveItemFromCart(userId int, itemId int) {
 		logger.Logger.Info(msg)
 	}
 
-	_, err = redisClient.HIncrBy(ctx, "cart:"+strconv.Itoa(userId), strconv.Itoa(itemId), -1).Result()
+	_, err = redisClient.HIncrBy(ctx, "cart:"+strconv.Itoa(userId), strconv.Itoa(itemId), -count).Result()
 
 	if err != nil {
 		msg := fmt.Sprintf("error removing item %d from cart", itemId)
