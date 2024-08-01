@@ -3,7 +3,6 @@ package services_test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"io"
 	"log"
 	"net/http"
@@ -73,6 +72,8 @@ func TestCreateProductHandlerReturns401(t *testing.T) {
 }
 
 func TestCreateProductHandlerReturns400(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
 	body := map[string]string{
 		"email":    "test@test.com",
 		"password": "123456789",
@@ -80,29 +81,50 @@ func TestCreateProductHandlerReturns400(t *testing.T) {
 
 	postBody, _ := json.Marshal(body)
 
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
 	rr := httptest.NewRecorder()
-	req, err := http.NewRequest(http.MethodPost, "", bytes.NewBuffer(postBody))
+
+	productBody := map[string]interface{}{
+		"name":     "test",
+		"details":  "some random product",
+		"price":    10,
+		"category": "clothing",
+	}
+
+	postProductBody, err := json.Marshal(productBody)
+	if err != nil {
+		t.Error(err)
+	}
+
+	req, err := http.NewRequest(http.MethodPost, "", bytes.NewBuffer(postProductBody))
 
 	if err != nil {
 		t.Error(err)
 	}
 
-	services.LoginUserHandler(rr, req)
+	services.CreateProductHandler(rr, req)
 
-	if rr.Result().StatusCode != http.StatusOK {
-		t.Errorf("expected a 200 for login but got %d", rr.Result().StatusCode)
+	if rr.Result().StatusCode != http.StatusUnauthorized {
+		t.Errorf("expected a 401 but got %d", rr.Result().StatusCode)
 	}
-
-	data, _ := io.ReadAll(rr.Result().Body)
-
-	jsonResponse := APIResponse{}
-
-	err = json.Unmarshal(data, &jsonResponse)
-
-	if err != nil {
-		t.Error(err)
-	}
-
 }
 
 func TestCreateProductHandlerReturns200(t *testing.T) {
@@ -134,8 +156,6 @@ func TestCreateProductHandlerReturns200(t *testing.T) {
 		t.Error(err)
 	}
 
-	fmt.Println("token: ", response.Data.Token)
-
 	rr := httptest.NewRecorder()
 
 	productBody := map[string]interface{}{
@@ -154,7 +174,6 @@ func TestCreateProductHandlerReturns200(t *testing.T) {
 	rr.Header().Add("Authorization", response.Data.Token)
 
 	if err != nil {
-		fmt.Println(err)
 		t.Error(err)
 	}
 
@@ -162,5 +181,551 @@ func TestCreateProductHandlerReturns200(t *testing.T) {
 
 	if rr.Result().StatusCode != http.StatusCreated {
 		t.Errorf("expected a 201 but got %d", rr.Result().StatusCode)
+	}
+}
+
+func TestGetProductHandlerReturns400(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.GetProductHandler))
+
+	resp, err = http.Get(server.URL)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("expected a 400 but got %d", resp.StatusCode)
+	}
+}
+
+func TestGetProductHandlerReturns404(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.GetProductHandler))
+
+	resp, err = http.Get(server.URL + "/1000")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("expected a 404 but got %d", resp.StatusCode)
+	}
+}
+
+func TestGetProductHandlerReturns200(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.GetProductHandler))
+
+	resp, err = http.Get(server.URL + "/1")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected a 200 but got %d", resp.StatusCode)
+	}
+}
+
+func TestGetAllProductsHandlerReturns400(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.GetAllProductsHandler))
+
+	resp, err = http.Get(server.URL)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("expected a 400 but got %d", resp.StatusCode)
+	}
+}
+
+func TestGetAllProductsHandlerReturns200(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.GetAllProductsHandler))
+
+	resp, err = http.Get(server.URL)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected a 200 but got %d", resp.StatusCode)
+	}
+}
+
+func TestDeleteProductHandlerReturns400(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.DeleteProductHandler))
+
+	resp, err = http.Get(server.URL)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("expected a 400 but got %d", resp.StatusCode)
+	}
+}
+
+func TestDeleteProductHandlerReturns404(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.DeleteProductHandler))
+
+	resp, err = http.Get(server.URL + "/1000")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("expected a 404 but got %d", resp.StatusCode)
+	}
+}
+
+func TestDeleteProductHandlerReturns403(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.DeleteProductHandler))
+
+	resp, err = http.Get(server.URL + "/1")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusForbidden {
+		t.Errorf("expected a 403 but got %d", resp.StatusCode)
+	}
+}
+
+func TestDeleteProductHandlerReturns200(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.DeleteProductHandler))
+
+	resp, err = http.Get(server.URL + "/1")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected a 200 but got %d", resp.StatusCode)
+	}
+}
+
+func TestUpdateProductHandlerReturns400(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.UpdateProductHandler))
+
+	resp, err = http.Get(server.URL)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("expected a 400 but got %d", resp.StatusCode)
+	}
+}
+
+func TestUpdateProductHandlerReturns404(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.UpdateProductHandler))
+
+	resp, err = http.Get(server.URL + "/1000")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("expected a 404 but got %d", resp.StatusCode)
+	}
+}
+
+func TestUpdateProductHandlerReturns403(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.UpdateProductHandler))
+
+	resp, err = http.Get(server.URL + "/1")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusForbidden {
+		t.Errorf("expected a 403 but got %d", resp.StatusCode)
+	}
+}
+
+func TestUpdateProductHandlerReturns200(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.UpdateProductHandler))
+
+	resp, err = http.Get(server.URL + "/1")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected a 200 but got %d", resp.StatusCode)
 	}
 }
