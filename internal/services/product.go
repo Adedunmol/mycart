@@ -207,7 +207,7 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if product.Vendor == foundUser.ID {
-		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "not the owner of the product", Data: nil, Status: "error"})
+		util.RespondWithJSON(w, http.StatusForbidden, APIResponse{Message: "not the owner of the product", Data: nil, Status: "error"})
 		return
 	}
 
@@ -274,7 +274,7 @@ func UpdateProductHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	if product.Vendor == foundUser.ID {
-		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "not the owner of the product", Data: nil, Status: "error"})
+		util.RespondWithJSON(w, http.StatusForbidden, APIResponse{Message: "not the owner of the product", Data: nil, Status: "error"})
 		return
 	}
 
