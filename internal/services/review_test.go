@@ -144,3 +144,129 @@ func TestCreateReviewHandlerReturns200(t *testing.T) {
 		t.Errorf("expected a 201 but got %d", rr.Result().StatusCode)
 	}
 }
+
+func TestGetReviewHandlerReturns400(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.GetReviewHandler))
+
+	resp, err = http.Get(server.URL)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusBadRequest {
+		t.Errorf("expected a 400 but got %d", resp.StatusCode)
+	}
+}
+
+func TestGetReviewHandlerReturns404(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.GetReviewHandler))
+
+	resp, err = http.Get(server.URL + "/1000")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusNotFound {
+		t.Errorf("expected a 404 but got %d", resp.StatusCode)
+	}
+}
+
+func TestGetReviewHandlerReturns200(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+
+	body := map[string]string{
+		"email":    "test@test.com",
+		"password": "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	var response APIResponse
+	respBody, err := io.ReadAll(resp.Body)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	err = json.Unmarshal(respBody, &response)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	server = httptest.NewServer(http.HandlerFunc(services.GetReviewHandler))
+
+	resp, err = http.Get(server.URL + "/1")
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		t.Errorf("expected a 200 but got %d", resp.StatusCode)
+	}
+}
