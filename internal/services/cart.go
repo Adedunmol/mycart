@@ -7,6 +7,7 @@ import (
 	"strconv"
 
 	"github.com/Adedunmol/mycart/internal/database"
+	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/redis"
 	"github.com/Adedunmol/mycart/internal/util"
@@ -226,4 +227,52 @@ func RemoveFromCartHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "", Data: nil, Status: "error"})
+}
+
+func RemoveFromRedisCartHandler(w http.ResponseWriter, r *http.Request) {
+	productID := r.URL.Query().Get("product_id")
+	count := r.URL.Query().Get("product_id")
+
+	if productID == "" {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no product id sent in the query param", Data: nil, Status: "error"})
+		return
+	}
+
+	username := r.Context().Value("username")
+
+	if username == nil {
+		util.RespondWithJSON(w, http.StatusUnauthorized, "Not authorized")
+		return
+	}
+
+	var foundUser models.User
+
+	result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+
+	if result.Error != nil {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		return
+	}
+
+	newProductID, err := strconv.Atoi(productID)
+	if err != nil {
+		logger.Logger.Error("could not convert product id")
+		logger.Logger.Error(err.Error())
+		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "internal server error", Data: nil, Status: "error"})
+	}
+
+	newCount, err := strconv.Atoi(count)
+	if err != nil {
+		logger.Logger.Error("could not convert count")
+		logger.Logger.Error(err.Error())
+		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "internal server error", Data: nil, Status: "error"})
+	}
+
+	if newCount <= 0 {
+		newCount = 1
+	}
+
+	redis.RemoveItemFromCart(int(foundUser.ID), newProductID, int64(newCount))
+
+	util.RespondWithJSON(w, http.StatusOK, APIResponse{Message: "item removed from cart successfully", Data: nil, Status: "success"})
 }
