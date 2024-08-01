@@ -49,13 +49,13 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 
 	// result = database.DB.Preload("CartItems").First(&cart, cartID)
 
+	// if result.Error != nil {
+	// 	util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "no cart found with this id", Data: nil, Status: "error"})
+	// 	return
+	// }
+
 	if len(updatedCart) < 1 {
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "cart is empty", Data: nil, Status: "error"})
-	}
-
-	if result.Error != nil {
-		util.RespondWithJSON(w, http.StatusNotFound, APIResponse{Message: "no cart found with this id", Data: nil, Status: "error"})
-		return
 	}
 
 	order := models.Order{
