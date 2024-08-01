@@ -5,57 +5,15 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log"
 	"net/http"
 	"net/http/httptest"
-	"os"
 	"testing"
-	"time"
 
-	"github.com/Adedunmol/mycart/internal/database"
-	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/services"
 )
 
-type APIResponse struct {
-	Message string `json:"message"`
-	Data    struct {
-		Token      string        `json:"token"`
-		Expiration time.Duration `json:"expiration"`
-	}
-	Status string `json:"status"`
-}
-
-func TestMain(m *testing.M) {
-
-	server := httptest.NewServer(http.HandlerFunc(services.CreateUserHandler))
-
-	body := map[string]string{
-		"first_name": "test",
-		"last_name":  "test",
-		"email":      "test@test.com",
-		"username":   "testusername",
-		"password":   "123456789",
-	}
-
-	postBody, _ := json.Marshal(body)
-
-	_, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		log.Fatal(err)
-	}
-
-	code := m.Run()
-
-	// drop table(s) here
-	database.DB.Migrator().DropTable(&models.User{}, &models.Role{}, &models.Product{})
-
-	os.Exit(code)
-}
-
-func TestCreateProductHandlerReturns401(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.CreateProductHandler))
+func TestCreateReviewHandlerReturns401(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(services.CreateReviewHandler))
 
 	body := map[string]string{}
 
@@ -72,7 +30,7 @@ func TestCreateProductHandlerReturns401(t *testing.T) {
 	}
 }
 
-func TestCreateProductHandlerReturns400(t *testing.T) {
+func TestCreateReviewHandlerReturns400(t *testing.T) {
 	body := map[string]string{
 		"email":    "test@test.com",
 		"password": "123456789",
@@ -93,19 +51,43 @@ func TestCreateProductHandlerReturns400(t *testing.T) {
 		t.Errorf("expected a 200 for login but got %d", rr.Result().StatusCode)
 	}
 
-	data, _ := io.ReadAll(rr.Result().Body)
-
-	jsonResponse := APIResponse{}
-
-	err = json.Unmarshal(data, &jsonResponse)
+	var response APIResponse
+	respBody, err := io.ReadAll(rr.Body)
 
 	if err != nil {
 		t.Error(err)
 	}
 
+	err = json.Unmarshal(respBody, &response)
+	if err != nil {
+		t.Error(err)
+	}
+
+	reviewBody := map[string]interface{}{
+		"comment": "some random comment",
+		"rating":  4,
+	}
+
+	postReviewBody, err := json.Marshal(reviewBody)
+	if err != nil {
+		t.Error(err)
+	}
+
+	req, err = http.NewRequest(http.MethodPost, "", bytes.NewBuffer(postReviewBody))
+	rr.Header().Add("Authorization", response.Data.Token)
+
+	if err != nil {
+		t.Error(err)
+	}
+
+	services.CreateReviewHandler(rr, req)
+
+	if rr.Result().StatusCode != http.StatusCreated {
+		t.Errorf("expected a 400 but got %d", rr.Result().StatusCode)
+	}
 }
 
-func TestCreateProductHandlerReturns200(t *testing.T) {
+func TestCreateReviewHandlerReturns200(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
 
 	body := map[string]string{
@@ -138,19 +120,17 @@ func TestCreateProductHandlerReturns200(t *testing.T) {
 
 	rr := httptest.NewRecorder()
 
-	productBody := map[string]interface{}{
-		"name":     "test",
-		"details":  "some random product",
-		"price":    10,
-		"category": "clothing",
+	reviewBody := map[string]interface{}{
+		"comment": "some random comment",
+		"rating":  4,
 	}
 
-	postProductBody, err := json.Marshal(productBody)
+	postReviewBody, err := json.Marshal(reviewBody)
 	if err != nil {
 		t.Error(err)
 	}
 
-	req, err := http.NewRequest(http.MethodPost, "", bytes.NewBuffer(postProductBody))
+	req, err := http.NewRequest(http.MethodPost, "", bytes.NewBuffer(postReviewBody))
 	rr.Header().Add("Authorization", response.Data.Token)
 
 	if err != nil {
@@ -158,7 +138,7 @@ func TestCreateProductHandlerReturns200(t *testing.T) {
 		t.Error(err)
 	}
 
-	services.CreateProductHandler(rr, req)
+	services.CreateReviewHandler(rr, req)
 
 	if rr.Result().StatusCode != http.StatusCreated {
 		t.Errorf("expected a 201 but got %d", rr.Result().StatusCode)
