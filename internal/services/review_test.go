@@ -100,17 +100,8 @@ func TestGetReviewHandlerReturns400(t *testing.T) {
 	user := createUser()
 	token, _ := generateToken(user.Username, time.Duration(15))
 
-	cookie := http.Cookie{
-		Name:  "token",
-		Value: token,
-		// Expires:  time.Now().Add(util.REFRESH_TOKEN_EXPIRATION),
-		HttpOnly: true,
-		MaxAge:   1 * 60 * 60,
-	}
-
 	req, _ := http.NewRequest("GET", "/reviews/", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(&cookie)
 	req.Header.Add("Authorization", token)
 
 	response := executeRequest(req)
@@ -123,27 +114,8 @@ func TestGetReviewHandlerReturns404(t *testing.T) {
 	user := createUser()
 	token, _ := generateToken(user.Username, time.Duration(15))
 
-	cookie := http.Cookie{
-		Name:  "token",
-		Value: token,
-		// Expires:  time.Now().Add(util.REFRESH_TOKEN_EXPIRATION),
-		HttpOnly: true,
-		MaxAge:   1 * 60 * 60,
-	}
-
-	reviewBody := map[string]interface{}{
-		"comment": "some random comment",
-		"rating":  4,
-	}
-
-	postReviewBody, err := json.Marshal(reviewBody)
-	if err != nil {
-		t.Error(err)
-	}
-
-	req, _ := http.NewRequest("POST", "/reviews/100", bytes.NewBuffer(postReviewBody))
+	req, _ := http.NewRequest("GET", "/reviews/100", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(&cookie)
 	req.Header.Add("Authorization", token)
 
 	response := executeRequest(req)
@@ -155,30 +127,12 @@ func TestGetReviewHandlerReturns200(t *testing.T) {
 	clearTables()
 	user := createUser()
 	token, _ := generateToken(user.Username, time.Duration(15))
-	product := createProduct()
+	review := createReview()
 
-	cookie := http.Cookie{
-		Name:  "token",
-		Value: token,
-		// Expires:  time.Now().Add(util.REFRESH_TOKEN_EXPIRATION),
-		HttpOnly: true,
-		MaxAge:   1 * 60 * 60,
-	}
+	reviewID := strconv.Itoa(int(review.ID))
 
-	reviewBody := map[string]interface{}{
-		"comment": "some random comment",
-		"rating":  4,
-	}
-
-	postReviewBody, err := json.Marshal(reviewBody)
-	if err != nil {
-		t.Error(err)
-	}
-	productID := strconv.Itoa(int(product.ID))
-
-	req, _ := http.NewRequest("POST", "/reviews/"+productID, bytes.NewBuffer(postReviewBody))
+	req, _ := http.NewRequest("GET", "/reviews/"+reviewID, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.AddCookie(&cookie)
 	req.Header.Add("Authorization", token)
 
 	response := executeRequest(req)
