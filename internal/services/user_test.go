@@ -54,6 +54,7 @@ func TestCreateUserHandlerReturns409(t *testing.T) {
 
 func TestLoginUserHandlerReturns400(t *testing.T) {
 	clearTables()
+	createUser()
 
 	body := map[string]string{}
 
