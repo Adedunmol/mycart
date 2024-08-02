@@ -134,3 +134,19 @@ func generateToken(username string, expiration time.Duration) (string, error) {
 
 	return tokenString, nil
 }
+
+func createReview() models.Review {
+	user := createUser()
+	product := createProduct()
+
+	review := models.Review{
+		Comment:   "some random comment",
+		Rating:    4,
+		ProductID: product.ID,
+		UserID:    user.ID,
+	}
+
+	database.DB.Create(&review)
+
+	return review
+}

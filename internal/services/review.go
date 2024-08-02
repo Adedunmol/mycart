@@ -64,6 +64,7 @@ func CreateReviewHandler(w http.ResponseWriter, r *http.Request) {
 		Comment:   data.Comment,
 		Rating:    data.Rating,
 		ProductID: product.ID,
+		UserID:    foundUser.ID,
 	}
 
 	result = database.DB.Create(&review)
