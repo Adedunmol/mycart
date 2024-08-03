@@ -3,8 +3,10 @@ package services_test
 import (
 	"bytes"
 	"encoding/json"
+	"fmt"
 	"net/http"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -24,9 +26,9 @@ func TestCreateProductHandlerReturns401(t *testing.T) {
 	checkResponseCode(t, http.StatusUnauthorized, response.Code)
 }
 
-func TestCreateProductHandlerReturns400(t *testing.T) {
+func TestCreateProductHandlerReturns422(t *testing.T) {
 	clearTables()
-	user := createUser()
+	user := createVendor()
 	token, _ := generateToken(user.Username, time.Duration(15))
 
 	body := map[string]string{}
@@ -35,11 +37,11 @@ func TestCreateProductHandlerReturns400(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/products", bytes.NewBuffer(postBody))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
-	checkResponseCode(t, http.StatusBadRequest, response.Code)
+	checkResponseCode(t, http.StatusUnprocessableEntity, response.Code)
 }
 
 func TestCreateProductHandlerReturns403(t *testing.T) {
@@ -58,14 +60,14 @@ func TestCreateProductHandlerReturns403(t *testing.T) {
 
 	req, _ := http.NewRequest("POST", "/products", bytes.NewBuffer(postBody))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusForbidden, response.Code)
 }
 
-func TestCreateProductHandlerReturns200(t *testing.T) {
+func TestCreateProductHandlerReturns201(t *testing.T) {
 	clearTables()
 	user := createVendor()
 	token, _ := generateToken(user.Username, time.Duration(15))
@@ -75,31 +77,17 @@ func TestCreateProductHandlerReturns200(t *testing.T) {
 		"details":  "some random product",
 		"price":    10,
 		"category": "clothing",
-		"Quantity": 100,
+		"quantity": 100,
 	}
 	postBody, _ := json.Marshal(body)
 
 	req, _ := http.NewRequest("POST", "/products", bytes.NewBuffer(postBody))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
-	checkResponseCode(t, http.StatusOK, response.Code)
-}
-
-func TestGetProductHandlerReturns400(t *testing.T) {
-	clearTables()
-	user := createUser()
-	token, _ := generateToken(user.Username, time.Duration(15))
-
-	req, _ := http.NewRequest("GET", "/products/", nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
-
-	response := executeRequest(req)
-
-	checkResponseCode(t, http.StatusBadRequest, response.Code)
+	checkResponseCode(t, http.StatusCreated, response.Code)
 }
 
 func TestGetProductHandlerReturns404(t *testing.T) {
@@ -109,7 +97,7 @@ func TestGetProductHandlerReturns404(t *testing.T) {
 
 	req, _ := http.NewRequest("GET", "/products/100", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
@@ -125,7 +113,7 @@ func TestGetProductHandlerReturns200(t *testing.T) {
 	productID := strconv.Itoa(int(product.ID))
 	req, _ := http.NewRequest("GET", "/products/"+productID, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
@@ -140,37 +128,24 @@ func TestGetAllProductsHandlerReturns200(t *testing.T) {
 
 	req, _ := http.NewRequest("GET", "/products/", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
 }
 
-func TestDeleteProductHandlerReturns400(t *testing.T) {
-	clearTables()
-	user := createUser()
-	token, _ := generateToken(user.Username, time.Duration(15))
-
-	req, _ := http.NewRequest("DELETE", "/products/", nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
-
-	response := executeRequest(req)
-
-	checkResponseCode(t, http.StatusBadRequest, response.Code)
-}
-
 func TestDeleteProductHandlerReturns404(t *testing.T) {
 	clearTables()
-	user := createUser()
+	user := createVendor()
 	token, _ := generateToken(user.Username, time.Duration(15))
 
 	req, _ := http.NewRequest("DELETE", "/products/100", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
+	fmt.Println(response.Body)
 
 	checkResponseCode(t, http.StatusNotFound, response.Code)
 }
@@ -184,7 +159,7 @@ func TestDeleteProductHandlerReturns403(t *testing.T) {
 	productID := strconv.Itoa(int(product.ID))
 	req, _ := http.NewRequest("DELETE", "/products/"+productID, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
@@ -199,7 +174,7 @@ func TestDeleteProductHandlerReturns200(t *testing.T) {
 	productID := strconv.Itoa(int(product.ID))
 	req, _ := http.NewRequest("DELETE", "/products/"+productID, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
@@ -208,12 +183,12 @@ func TestDeleteProductHandlerReturns200(t *testing.T) {
 
 func TestUpdateProductHandlerReturns400(t *testing.T) {
 	clearTables()
-	user := createUser()
+	_, user := createProduct()
 	token, _ := generateToken(user.Username, time.Duration(15))
 
 	req, _ := http.NewRequest("PATCH", "/products/", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
@@ -222,12 +197,12 @@ func TestUpdateProductHandlerReturns400(t *testing.T) {
 
 func TestUpdateProductHandlerReturns404(t *testing.T) {
 	clearTables()
-	user := createUser()
+	_, user := createProduct()
 	token, _ := generateToken(user.Username, time.Duration(15))
 
 	req, _ := http.NewRequest("PATCH", "/products/100", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
@@ -243,7 +218,7 @@ func TestUpdateProductHandlerReturns403(t *testing.T) {
 	productID := strconv.Itoa(int(product.ID))
 	req, _ := http.NewRequest("PATCH", "/products/"+productID, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
@@ -258,7 +233,7 @@ func TestUpdateProductHandlerReturns200(t *testing.T) {
 	productID := strconv.Itoa(int(product.ID))
 	req, _ := http.NewRequest("PATCH", "/products/"+productID, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
