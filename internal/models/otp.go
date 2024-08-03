@@ -8,7 +8,7 @@ import (
 
 type Otp struct {
 	gorm.Model
-	User      User      `json:"user"`
+	User      uint      `json:"user"`
 	Code      string    `json:"code"`
 	ExpiresAt time.Time `json:"expires_at"`
 }

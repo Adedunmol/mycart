@@ -56,9 +56,9 @@ func TestMain(m *testing.M) {
 }
 
 func clearTables() {
-	database.DB.Migrator().DropTable(&models.User{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{})
+	database.DB.Migrator().DropTable(&models.User{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{}, &models.Otp{})
 
-	database.DB.AutoMigrate(&models.User{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{})
+	database.DB.AutoMigrate(&models.User{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{}, &models.Otp{})
 }
 
 func checkResponseCode(t *testing.T, expected, actual int) {
@@ -175,4 +175,9 @@ func addItemToCart(userID int, productID int) {
 	} else {
 		redis.AddItemToCart(userID, int(productID), 1)
 	}
+}
+
+func addTokenToUser(foundUser *models.User, refreshToken string) {
+
+	database.DB.Model(&foundUser).UpdateColumn("RefreshToken", refreshToken)
 }

@@ -93,7 +93,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	if result.Error != nil {
 		logger.Logger.Error(result.Error.Error())
-		util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "error creating user", Data: nil, Status: "error"})
+		util.RespondWithJSON(w, http.StatusConflict, APIResponse{Message: "duplicate value entered", Data: nil, Status: "error"})
 		return
 	}
 
@@ -108,7 +108,7 @@ func CreateUserHandler(w http.ResponseWriter, r *http.Request) {
 	}
 
 	otp := models.Otp{
-		User:      user,
+		User:      user.ID,
 		Code:      string(hashedOtp),
 		ExpiresAt: time.Now().Add(OTP_EXPIRATION),
 	}

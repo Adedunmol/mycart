@@ -30,6 +30,28 @@ func TestCreateUserHandlerReturns201(t *testing.T) {
 
 }
 
+func TestCreateVendorrHandlerReturns201(t *testing.T) {
+	clearTables()
+
+	body := map[string]string{
+		"first_name": "test",
+		"last_name":  "test",
+		"email":      "test@test.com",
+		"username":   "testusername",
+		"password":   "123456789",
+	}
+
+	postBody, _ := json.Marshal(body)
+
+	req, _ := http.NewRequest("POST", "/vendors/register", bytes.NewBuffer([]byte(postBody)))
+	req.Header.Set("Content-Type", "application/json")
+
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusCreated, response.Code)
+
+}
+
 func TestCreateUserHandlerReturns409(t *testing.T) {
 	clearTables()
 	createUser()
@@ -52,7 +74,7 @@ func TestCreateUserHandlerReturns409(t *testing.T) {
 	checkResponseCode(t, http.StatusConflict, response.Code)
 }
 
-func TestLoginUserHandlerReturns400(t *testing.T) {
+func TestLoginUserHandlerReturns422(t *testing.T) {
 	clearTables()
 	createUser()
 
@@ -65,7 +87,7 @@ func TestLoginUserHandlerReturns400(t *testing.T) {
 
 	response := executeRequest(req)
 
-	checkResponseCode(t, http.StatusBadRequest, response.Code)
+	checkResponseCode(t, http.StatusUnprocessableEntity, response.Code)
 
 }
 
@@ -127,6 +149,7 @@ func TestRefreshTokenHandlerReturns200(t *testing.T) {
 	clearTables()
 	user := createUser()
 	token, _ := generateToken(user.Username, time.Duration(15))
+	addTokenToUser(&user, token)
 
 	cookie := http.Cookie{
 		Name:  "token",
