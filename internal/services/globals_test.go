@@ -1,18 +1,21 @@
 package services_test
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"os"
 	"testing"
 	"time"
 
-	"github.com/Adedunmol/mycart/internal/app"
+	_ "github.com/Adedunmol/mycart/internal/app"
 	"github.com/Adedunmol/mycart/internal/config"
 	"github.com/Adedunmol/mycart/internal/database"
 	"github.com/Adedunmol/mycart/internal/models"
 	"github.com/Adedunmol/mycart/internal/redis"
+	"github.com/Adedunmol/mycart/internal/routes"
 	"github.com/Adedunmol/mycart/internal/tasks"
+	"github.com/go-chi/chi/v5"
 	jwt "github.com/golang-jwt/jwt/v5"
 )
 
@@ -27,6 +30,8 @@ type APIResponse struct {
 
 const redisAddress = "127.0.0.1:6379"
 
+var router *chi.Mux
+
 func TestMain(m *testing.M) {
 
 	go tasks.Init(redisAddress)
@@ -38,6 +43,10 @@ func TestMain(m *testing.M) {
 	go redis.Init(redisAddress)
 	defer redis.Close()
 
+	router = chi.NewRouter()
+
+	routes.SetupRoutes(router)
+
 	code := m.Run()
 
 	// drop table(s) here
@@ -47,7 +56,9 @@ func TestMain(m *testing.M) {
 }
 
 func clearTables() {
-	database.DB.Migrator().DropTable(&models.User{}, &models.Product{})
+	database.DB.Migrator().DropTable(&models.User{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{})
+
+	database.DB.AutoMigrate(&models.User{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{})
 }
 
 func checkResponseCode(t *testing.T, expected, actual int) {
@@ -58,7 +69,7 @@ func checkResponseCode(t *testing.T, expected, actual int) {
 
 func executeRequest(req *http.Request) *httptest.ResponseRecorder {
 	rr := httptest.NewRecorder()
-	app.Router.ServeHTTP(rr, req)
+	router.ServeHTTP(rr, req)
 
 	return rr
 }
@@ -77,7 +88,9 @@ func createUser() models.User {
 		RoleID:    role.ID,
 	}
 
-	_ = database.DB.Create(&user)
+	result := database.DB.Create(&user)
+
+	fmt.Println(result.Error)
 
 	return user
 }
@@ -118,15 +131,18 @@ func createProduct() (models.Product, models.User) {
 	return product, user
 }
 
+const ACCESS_TOKEN_EXPIRATION = 15 * time.Minute
+
 func generateToken(username string, expiration time.Duration) (string, error) {
 
 	claims := jwt.MapClaims{
 		"username": username,
-		"exp":      time.Now().Add(expiration).Unix(), // jwt.NewNumericDate(time.Now().Add(expiration)),
+		"exp":      time.Now().Add(ACCESS_TOKEN_EXPIRATION).Unix(), // jwt.NewNumericDate(time.Now().Add(expiration)),
 		"iat":      time.Now(),
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
+
 	tokenString, err := token.SignedString([]byte(config.EnvConfig.SecretKey))
 	if err != nil {
 		return "", err
