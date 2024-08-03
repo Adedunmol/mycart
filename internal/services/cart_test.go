@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"net/http"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 )
@@ -18,9 +19,26 @@ func TestAddToCartReturns400(t *testing.T) {
 
 	postBody, _ := json.Marshal(body)
 
-	req, _ := http.NewRequest("POST", "/carts/", bytes.NewBuffer(postBody))
+	req, _ := http.NewRequest("POST", "/carts/add-item", bytes.NewBuffer(postBody))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
+
+	response := executeRequest(req)
+
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
+
+func TestAddToCartReturnsUserNotExists400(t *testing.T) {
+	clearTables()
+	token, _ := generateToken("some random user", time.Duration(15))
+
+	body := map[string]string{}
+
+	postBody, _ := json.Marshal(body)
+
+	req, _ := http.NewRequest("POST", "/carts/add-item?product_id=100&quantity=1", bytes.NewBuffer(postBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
@@ -36,9 +54,9 @@ func TestAddToCartReturns404(t *testing.T) {
 
 	postBody, _ := json.Marshal(body)
 
-	req, _ := http.NewRequest("POST", "/carts/?product_id=100&quantity=1", bytes.NewBuffer(postBody))
+	req, _ := http.NewRequest("POST", "/carts/add-item?product_id=100&quantity=1", bytes.NewBuffer(postBody))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
@@ -56,9 +74,9 @@ func TestAddToCartReturns200(t *testing.T) {
 	postBody, _ := json.Marshal(body)
 
 	productID := strconv.Itoa(int(product.ID))
-	req, _ := http.NewRequest("POST", "/carts/?product_id="+productID+"&quantity=1", bytes.NewBuffer(postBody))
+	req, _ := http.NewRequest("POST", "/carts/add-item?product_id="+productID+"&quantity=1", bytes.NewBuffer(postBody))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
@@ -77,11 +95,11 @@ func TestGetCartReturns200(t *testing.T) {
 
 	req, _ := http.NewRequest("GET", "/carts/", bytes.NewBuffer(postBody))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
-	checkResponseCode(t, http.StatusBadRequest, response.Code)
+	checkResponseCode(t, http.StatusOK, response.Code)
 }
 
 func TestRemoveFromCartReturns400(t *testing.T) {
@@ -93,16 +111,16 @@ func TestRemoveFromCartReturns400(t *testing.T) {
 
 	postBody, _ := json.Marshal(body)
 
-	req, _ := http.NewRequest("POST", "/carts/", bytes.NewBuffer(postBody))
+	req, _ := http.NewRequest("POST", "/carts/remove-item", bytes.NewBuffer(postBody))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusBadRequest, response.Code)
 }
 
-func TestRemoveCartReturns200(t *testing.T) {
+func TestRemoveFromCartReturns200(t *testing.T) {
 	clearTables()
 	user := createUser()
 	product, _ := createProduct()
@@ -114,11 +132,11 @@ func TestRemoveCartReturns200(t *testing.T) {
 	postBody, _ := json.Marshal(body)
 
 	productID := strconv.Itoa(int(product.ID))
-	req, _ := http.NewRequest("POST", "/carts/?product_id="+productID+"&quantity=1", bytes.NewBuffer(postBody))
+	req, _ := http.NewRequest("POST", "/carts/remove-item?product_id="+productID+"&quantity=1", bytes.NewBuffer(postBody))
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
 
-	checkResponseCode(t, http.StatusBadRequest, response.Code)
+	checkResponseCode(t, http.StatusOK, response.Code)
 }

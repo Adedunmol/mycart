@@ -95,9 +95,11 @@ func RoleAuthorization(permissions ...uint8) func(handler http.Handler) http.Han
 			username := r.Context().Value("username")
 			var foundUser models.User
 
+			fmt.Println("role auth username:", username)
 			result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
 
 			if result.Error != nil {
+				fmt.Println("gorm: ", result.Error)
 				RespondWithJSON(w, http.StatusUnauthorized, APIResponse{Message: "Unauthorized", Data: nil, Status: "error"})
 				return
 			}
