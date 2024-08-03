@@ -6,6 +6,7 @@ import (
 	"github.com/Adedunmol/mycart/internal/models"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 )
 
 var DB *gorm.DB
@@ -14,7 +15,7 @@ func InitDB() error {
 	var err error
 
 	if config.EnvConfig.Environment == "test" {
-		DB, err = gorm.Open(postgres.Open(config.EnvConfig.TestDatabaseUrl), &gorm.Config{TranslateError: true})
+		DB, err = gorm.Open(postgres.Open(config.EnvConfig.TestDatabaseUrl), &gorm.Config{TranslateError: true, Logger: logger.Default.LogMode(logger.Silent)})
 	} else {
 		DB, err = gorm.Open(postgres.Open(config.EnvConfig.DatabaseUrl), &gorm.Config{TranslateError: true})
 	}
