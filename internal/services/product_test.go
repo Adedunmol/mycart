@@ -3,687 +3,264 @@ package services_test
 import (
 	"bytes"
 	"encoding/json"
-	"io"
 	"net/http"
-	"net/http/httptest"
+	"strconv"
 	"testing"
-
-	"github.com/Adedunmol/mycart/internal/services"
+	"time"
 )
 
 func TestCreateProductHandlerReturns401(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.CreateProductHandler))
+	clearTables()
 
 	body := map[string]string{}
 
 	postBody, _ := json.Marshal(body)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+	req, _ := http.NewRequest("POST", "/products", bytes.NewBuffer(postBody))
+	req.Header.Set("Content-Type", "application/json")
 
-	if err != nil {
-		t.Error(err)
-	}
+	response := executeRequest(req)
 
-	if resp.StatusCode != http.StatusUnauthorized {
-		t.Errorf("expected 401, but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusUnauthorized, response.Code)
 }
 
 func TestCreateProductHandlerReturns400(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createUser()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	body := map[string]string{}
 
 	postBody, _ := json.Marshal(body)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
+	req, _ := http.NewRequest("POST", "/products", bytes.NewBuffer(postBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	if err != nil {
-		t.Error(err)
-	}
+	response := executeRequest(req)
 
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
+}
 
-	if err != nil {
-		t.Error(err)
-	}
+func TestCreateProductHandlerReturns403(t *testing.T) {
+	clearTables()
+	user := createUser()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	rr := httptest.NewRecorder()
-
-	productBody := map[string]interface{}{
+	body := map[string]interface{}{
 		"name":     "test",
 		"details":  "some random product",
 		"price":    10,
 		"category": "clothing",
+		"Quantity": 100,
 	}
+	postBody, _ := json.Marshal(body)
 
-	postProductBody, err := json.Marshal(productBody)
-	if err != nil {
-		t.Error(err)
-	}
+	req, _ := http.NewRequest("POST", "/products", bytes.NewBuffer(postBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	req, err := http.NewRequest(http.MethodPost, "", bytes.NewBuffer(postProductBody))
+	response := executeRequest(req)
 
-	if err != nil {
-		t.Error(err)
-	}
-
-	services.CreateProductHandler(rr, req)
-
-	if rr.Result().StatusCode != http.StatusUnauthorized {
-		t.Errorf("expected a 401 but got %d", rr.Result().StatusCode)
-	}
+	checkResponseCode(t, http.StatusForbidden, response.Code)
 }
 
 func TestCreateProductHandlerReturns200(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createVendor()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
-
-	postBody, _ := json.Marshal(body)
-
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	rr := httptest.NewRecorder()
-
-	productBody := map[string]interface{}{
+	body := map[string]interface{}{
 		"name":     "test",
 		"details":  "some random product",
 		"price":    10,
 		"category": "clothing",
+		"Quantity": 100,
 	}
+	postBody, _ := json.Marshal(body)
 
-	postProductBody, err := json.Marshal(productBody)
-	if err != nil {
-		t.Error(err)
-	}
+	req, _ := http.NewRequest("POST", "/products", bytes.NewBuffer(postBody))
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	req, err := http.NewRequest(http.MethodPost, "", bytes.NewBuffer(postProductBody))
-	rr.Header().Add("Authorization", response.Data.Token)
+	response := executeRequest(req)
 
-	if err != nil {
-		t.Error(err)
-	}
-
-	services.CreateProductHandler(rr, req)
-
-	if rr.Result().StatusCode != http.StatusCreated {
-		t.Errorf("expected a 201 but got %d", rr.Result().StatusCode)
-	}
+	checkResponseCode(t, http.StatusOK, response.Code)
 }
 
 func TestGetProductHandlerReturns400(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createUser()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	req, _ := http.NewRequest("GET", "/products/", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.GetProductHandler))
-
-	resp, err = http.Get(server.URL)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected a 400 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
 }
 
 func TestGetProductHandlerReturns404(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createUser()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	req, _ := http.NewRequest("GET", "/products/100", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.GetProductHandler))
-
-	resp, err = http.Get(server.URL + "/1000")
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusNotFound {
-		t.Errorf("expected a 404 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusNotFound, response.Code)
 }
 
 func TestGetProductHandlerReturns200(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createUser()
+	product, _ := createProduct()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	productID := strconv.Itoa(int(product.ID))
+	req, _ := http.NewRequest("GET", "/products/"+productID, nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.GetProductHandler))
-
-	resp, err = http.Get(server.URL + "/1")
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected a 200 but got %d", resp.StatusCode)
-	}
-}
-
-func TestGetAllProductsHandlerReturns400(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
-
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
-
-	postBody, _ := json.Marshal(body)
-
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.GetAllProductsHandler))
-
-	resp, err = http.Get(server.URL)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected a 400 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusOK, response.Code)
 }
 
 func TestGetAllProductsHandlerReturns200(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createUser()
+	createProduct()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	req, _ := http.NewRequest("GET", "/products/", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.GetAllProductsHandler))
-
-	resp, err = http.Get(server.URL)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected a 200 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusOK, response.Code)
 }
 
 func TestDeleteProductHandlerReturns400(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createUser()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	req, _ := http.NewRequest("DELETE", "/products/", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.DeleteProductHandler))
-
-	resp, err = http.Get(server.URL)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected a 400 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
 }
 
 func TestDeleteProductHandlerReturns404(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createUser()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	req, _ := http.NewRequest("DELETE", "/products/100", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.DeleteProductHandler))
-
-	resp, err = http.Get(server.URL + "/1000")
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusNotFound {
-		t.Errorf("expected a 404 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusNotFound, response.Code)
 }
 
 func TestDeleteProductHandlerReturns403(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createUser()
+	product, _ := createProduct()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	productID := strconv.Itoa(int(product.ID))
+	req, _ := http.NewRequest("DELETE", "/products/"+productID, nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.DeleteProductHandler))
-
-	resp, err = http.Get(server.URL + "/1")
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusForbidden {
-		t.Errorf("expected a 403 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusForbidden, response.Code)
 }
 
 func TestDeleteProductHandlerReturns200(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	product, user := createProduct()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	productID := strconv.Itoa(int(product.ID))
+	req, _ := http.NewRequest("DELETE", "/products/"+productID, nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.DeleteProductHandler))
-
-	resp, err = http.Get(server.URL + "/1")
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected a 200 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusOK, response.Code)
 }
 
 func TestUpdateProductHandlerReturns400(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createUser()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	req, _ := http.NewRequest("PATCH", "/products/", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.UpdateProductHandler))
-
-	resp, err = http.Get(server.URL)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusBadRequest {
-		t.Errorf("expected a 400 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusBadRequest, response.Code)
 }
 
 func TestUpdateProductHandlerReturns404(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createUser()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	req, _ := http.NewRequest("PATCH", "/products/100", nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.UpdateProductHandler))
-
-	resp, err = http.Get(server.URL + "/1000")
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusNotFound {
-		t.Errorf("expected a 404 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusNotFound, response.Code)
 }
 
 func TestUpdateProductHandlerReturns403(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	user := createUser()
+	product, _ := createProduct()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	productID := strconv.Itoa(int(product.ID))
+	req, _ := http.NewRequest("PATCH", "/products/"+productID, nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.UpdateProductHandler))
-
-	resp, err = http.Get(server.URL + "/1")
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusForbidden {
-		t.Errorf("expected a 403 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusForbidden, response.Code)
 }
 
 func TestUpdateProductHandlerReturns200(t *testing.T) {
-	server := httptest.NewServer(http.HandlerFunc(services.LoginUserHandler))
+	clearTables()
+	product, user := createProduct()
+	token, _ := generateToken(user.Username, time.Duration(15))
 
-	body := map[string]string{
-		"email":    "test@test.com",
-		"password": "123456789",
-	}
+	productID := strconv.Itoa(int(product.ID))
+	req, _ := http.NewRequest("PATCH", "/products/"+productID, nil)
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Add("Authorization", token)
 
-	postBody, _ := json.Marshal(body)
+	response := executeRequest(req)
 
-	resp, err := http.Post(server.URL, "application/json", bytes.NewBuffer(postBody))
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	var response APIResponse
-	respBody, err := io.ReadAll(resp.Body)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	err = json.Unmarshal(respBody, &response)
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	server = httptest.NewServer(http.HandlerFunc(services.UpdateProductHandler))
-
-	resp, err = http.Get(server.URL + "/1")
-
-	if err != nil {
-		t.Error(err)
-	}
-
-	if resp.StatusCode != http.StatusOK {
-		t.Errorf("expected a 200 but got %d", resp.StatusCode)
-	}
+	checkResponseCode(t, http.StatusOK, response.Code)
 }

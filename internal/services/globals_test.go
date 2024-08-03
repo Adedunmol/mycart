@@ -101,7 +101,7 @@ func createVendor() models.User {
 	return user
 }
 
-func createProduct() models.Product {
+func createProduct() (models.Product, models.User) {
 	user := createVendor()
 
 	product := models.Product{
@@ -115,7 +115,7 @@ func createProduct() models.Product {
 
 	database.DB.Create(&product)
 
-	return product
+	return product, user
 }
 
 func generateToken(username string, expiration time.Duration) (string, error) {
@@ -137,7 +137,7 @@ func generateToken(username string, expiration time.Duration) (string, error) {
 
 func createReview() models.Review {
 	user := createUser()
-	product := createProduct()
+	product, _ := createProduct()
 
 	review := models.Review{
 		Comment:   "some random comment",

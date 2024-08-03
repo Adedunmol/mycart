@@ -206,7 +206,7 @@ func DeleteProductHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	if product.Vendor == foundUser.ID {
+	if product.Vendor != foundUser.ID {
 		util.RespondWithJSON(w, http.StatusForbidden, APIResponse{Message: "not the owner of the product", Data: nil, Status: "error"})
 		return
 	}
