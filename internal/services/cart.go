@@ -112,6 +112,11 @@ func AddToRedisCartHandler(w http.ResponseWriter, r *http.Request) {
 	productID := r.URL.Query().Get("product_id")
 	quantity := r.URL.Query().Get("quantity")
 
+	if productID == "" && quantity == "" {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "invalid details", Data: nil, Status: "error"})
+		return
+	}
+
 	username := r.Context().Value("username")
 
 	if username == nil {
@@ -233,8 +238,8 @@ func RemoveFromRedisCartHandler(w http.ResponseWriter, r *http.Request) {
 	productID := r.URL.Query().Get("product_id")
 	count := r.URL.Query().Get("product_id")
 
-	if productID == "" {
-		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no product id sent in the query param", Data: nil, Status: "error"})
+	if productID == "" && count == "" {
+		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "no product id or count sent in the query param", Data: nil, Status: "error"})
 		return
 	}
 

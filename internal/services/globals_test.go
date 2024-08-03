@@ -150,3 +150,13 @@ func createReview() models.Review {
 
 	return review
 }
+
+func addItemToCart(userID int, productID int) {
+	product, _ := createProduct()
+
+	if productID == 0 {
+		redis.AddItemToCart(userID, int(product.ID), 1)
+	} else {
+		redis.AddItemToCart(userID, int(productID), 1)
+	}
+}
