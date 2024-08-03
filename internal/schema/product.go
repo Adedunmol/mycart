@@ -10,8 +10,8 @@ import (
 type CreateProductDto struct {
 	Name     string `json:"name" validate:"required"`
 	Details  string `json:"details" validate:"required"`
-	Price    int    `json:"price" validate:"required, min=0"`
-	Quantity int    `json:"quantity" validate:"required, min=1"`
+	Price    int    `json:"price" validate:"required,min=0"`
+	Quantity int    `json:"quantity" validate:"required,min=1"`
 	Category string `json:"category" validate:"required"`
 	// Date     time.Time `json:"date"`
 }
