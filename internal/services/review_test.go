@@ -65,6 +65,7 @@ func TestCreateReviewHandlerReturns400(t *testing.T) {
 func TestCreateReviewHandlerReturns200(t *testing.T) {
 	clearTables()
 	user := createUser()
+	product, _ := createProduct()
 	token, _ := generateToken(user.Username, time.Duration(15))
 
 	cookie := http.Cookie{
@@ -84,25 +85,12 @@ func TestCreateReviewHandlerReturns200(t *testing.T) {
 	if err != nil {
 		t.Error(err)
 	}
+	productID := strconv.Itoa(int(product.ID))
 
-	req, _ := http.NewRequest("POST", "/reviews/", bytes.NewBuffer(postReviewBody))
+	req, _ := http.NewRequest("POST", "/reviews/"+productID, bytes.NewBuffer(postReviewBody))
 	req.Header.Set("Content-Type", "application/json")
 	req.AddCookie(&cookie)
-	req.Header.Add("Authorization", token)
-
-	response := executeRequest(req)
-
-	checkResponseCode(t, http.StatusCreated, response.Code)
-}
-
-func TestGetReviewHandlerReturns400(t *testing.T) {
-	clearTables()
-	user := createUser()
-	token, _ := generateToken(user.Username, time.Duration(15))
-
-	req, _ := http.NewRequest("GET", "/reviews/", nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+token)
 
 	response := executeRequest(req)
 
@@ -116,7 +104,7 @@ func TestGetReviewHandlerReturns404(t *testing.T) {
 
 	req, _ := http.NewRequest("GET", "/reviews/100", nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+token)
 
 	response := executeRequest(req)
 
@@ -133,7 +121,7 @@ func TestGetReviewHandlerReturns200(t *testing.T) {
 
 	req, _ := http.NewRequest("GET", "/reviews/"+reviewID, nil)
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", token)
+	req.Header.Add("Authorization", "Bearer "+token)
 
 	response := executeRequest(req)
 

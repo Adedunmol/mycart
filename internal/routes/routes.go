@@ -9,4 +9,5 @@ func SetupRoutes(r *chi.Mux) {
 	ProductsRoutes(r)
 	CartsRoutes(r)
 	OrdersRoutes(r)
+	ReviewsRoutes(r)
 }
