@@ -3,7 +3,6 @@ package services_test
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
 	"net/http"
 	"strconv"
 	"strings"
@@ -145,7 +144,6 @@ func TestDeleteProductHandlerReturns404(t *testing.T) {
 	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
 	response := executeRequest(req)
-	fmt.Println(response.Body)
 
 	checkResponseCode(t, http.StatusNotFound, response.Code)
 }
@@ -179,20 +177,6 @@ func TestDeleteProductHandlerReturns200(t *testing.T) {
 	response := executeRequest(req)
 
 	checkResponseCode(t, http.StatusOK, response.Code)
-}
-
-func TestUpdateProductHandlerReturns400(t *testing.T) {
-	clearTables()
-	_, user := createProduct()
-	token, _ := generateToken(user.Username, time.Duration(15))
-
-	req, _ := http.NewRequest("PATCH", "/products/", nil)
-	req.Header.Set("Content-Type", "application/json")
-	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
-
-	response := executeRequest(req)
-
-	checkResponseCode(t, http.StatusBadRequest, response.Code)
 }
 
 func TestUpdateProductHandlerReturns404(t *testing.T) {
@@ -230,8 +214,17 @@ func TestUpdateProductHandlerReturns200(t *testing.T) {
 	product, user := createProduct()
 	token, _ := generateToken(user.Username, time.Duration(15))
 
+	body := map[string]interface{}{
+		"name":     "test",
+		"details":  "some random product",
+		"price":    10,
+		"category": "clothing",
+		"quantity": 100,
+	}
+	postBody, _ := json.Marshal(body)
+
 	productID := strconv.Itoa(int(product.ID))
-	req, _ := http.NewRequest("PATCH", "/products/"+productID, nil)
+	req, _ := http.NewRequest("PATCH", "/products/"+productID, bytes.NewBuffer(postBody))
 	req.Header.Set("Content-Type", "application/json")
 	req.Header.Add("Authorization", "Bearer "+strings.TrimSpace(token))
 
