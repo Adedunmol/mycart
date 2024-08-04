@@ -2,7 +2,12 @@ package util
 
 import (
 	"bytes"
+	"crypto/tls"
+	"errors"
+	"fmt"
 	htmlTemplate "html/template"
+	"os"
+	"path/filepath"
 	textTemplate "text/template"
 
 	"github.com/Adedunmol/mycart/internal/config"
@@ -36,6 +41,7 @@ func SendMail(to string, subject string, html string, plain string) {
 }
 
 func SendMailWithTemplate(templateFile string, to string, subject string, locals interface{}, attachment string) {
+	fmt.Println(to)
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", config.EnvConfig.EmailUsername)
@@ -44,31 +50,53 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 
 	var html *htmlTemplate.Template
 	var text *textTemplate.Template
-	var err error
+	// var err error
+
+	currentDirectory, _ := os.Getwd()
 
 	switch templateFile {
 	case "verification":
-		html, err = html.ParseFiles("../email-templates/verification/verification.html")
-		if err != nil {
-			logger.Logger.Error("could not parse html file")
+		pathToHtmlFile := filepath.Join(currentDirectory, "internal", "email-templates", "verification", "verification.html")
+		if _, err := os.Stat(pathToHtmlFile); err == nil {
+			// path/to/whatever exists
+			fmt.Println("file does exist")
+			html = htmlTemplate.Must(htmlTemplate.ParseFiles(pathToHtmlFile))
+		} else if errors.Is(err, os.ErrNotExist) {
+			// path/to/whatever does *not* exist
+			logger.Logger.Error("file does not exist")
 			return
 		}
 
-		text, err = text.ParseFiles("../email-templates/verification/verification.txt")
-		if err != nil {
-			logger.Logger.Error("could not parse text file")
+		pathToTextFile := filepath.Join(currentDirectory, "internal", "email-templates", "verification", "verification.txt")
+		if _, err := os.Stat(pathToTextFile); err == nil {
+			// path/to/whatever exists
+			fmt.Println("file does exist")
+			text = textTemplate.Must(textTemplate.ParseFiles(pathToTextFile))
+		} else if errors.Is(err, os.ErrNotExist) {
+			logger.Logger.Error("file does not exist")
 			return
 		}
+
 	case "purchase":
-		html, err = html.ParseFiles("../email-templates/verification/purchase.html")
-		if err != nil {
-			logger.Logger.Error("could not parse html file")
+		pathToHtmlFile := filepath.Join(currentDirectory, "internal", "email-templates", "purchase", "purchase.html")
+		if _, err := os.Stat(pathToHtmlFile); err == nil {
+			// path/to/whatever exists
+			fmt.Println("file does exist")
+			html = htmlTemplate.Must(htmlTemplate.ParseFiles(pathToHtmlFile))
+		} else if errors.Is(err, os.ErrNotExist) {
+			// path/to/whatever does *not* exist
+			logger.Logger.Error("file does not exist")
 			return
 		}
 
-		text, err = text.ParseFiles("../email-templates/verification/purchase.txt")
-		if err != nil {
-			logger.Logger.Error("could not parse text file")
+		pathToTextFile := filepath.Join(currentDirectory, "internal", "email-templates", "purchase", "purchase.txt")
+		if _, err := os.Stat(pathToTextFile); err == nil {
+			// path/to/whatever exists
+			fmt.Println("file does exist")
+			html = htmlTemplate.Must(htmlTemplate.ParseFiles(pathToHtmlFile))
+		} else if errors.Is(err, os.ErrNotExist) {
+			// path/to/whatever does *not* exist
+			logger.Logger.Error("file does not exist")
 			return
 		}
 	}
@@ -87,8 +115,10 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 	}
 
 	d := gomail.NewDialer("sandbox.smtp.mailtrap.io", 587, config.EnvConfig.EmailUsername, config.EnvConfig.EmailPassword)
+	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	if err := d.DialAndSend(m); err != nil {
+		logger.Logger.Error(err.Error())
 		logger.Logger.Error("could not send mail")
 	}
 }
