@@ -181,7 +181,7 @@ func LoginUserHandler(w http.ResponseWriter, r *http.Request) {
 	result := database.DB.Where(models.User{Email: data.Email}).First(&foundUser)
 
 	if result.Error != nil {
-		util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Message: "user does not exist", Data: nil, Status: "error"})
+		util.RespondWithJSON(w, http.StatusUnauthorized, util.APIResponse{Message: "Invalid credentials", Data: nil, Status: "error"})
 		return
 	}
 
