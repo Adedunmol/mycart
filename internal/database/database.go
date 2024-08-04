@@ -33,6 +33,7 @@ func InitDB() error {
 		customLogger.Logger.Info("Running migrations")
 	}
 
+	DB.AutoMigrate(&models.Otp{})
 	DB.AutoMigrate(&models.User{}, &models.Role{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{})
 
 	return nil
