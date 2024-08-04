@@ -26,9 +26,6 @@
 **ORM**
 - [x] GORM
 
-**Testing framework**
-- [x] Jest
-
 **Language**
 - [x] Golang
   
