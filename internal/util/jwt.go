@@ -98,21 +98,22 @@ func RoleAuthorization(permissions ...uint8) func(handler http.Handler) http.Han
 				RespondWithJSON(w, http.StatusUnauthorized, "Not authorized")
 				return
 			}
-			newUsername := username.(string)
-			fmt.Println("role auth username:", username)
 			var foundUser models.User
 
-			// result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
-			result := database.DB.Where("username = ?", newUsername).First(&foundUser)
+			result := database.DB.Where(models.User{Username: username.(string)}).First(&foundUser)
+
 			if result.Error != nil {
-				fmt.Println("gorm: ", result.Error)
 				RespondWithJSON(w, http.StatusUnauthorized, APIResponse{Message: "Unauthorized", Data: nil, Status: "error"})
 				return
 			}
 
 			var role models.Role
 
-			database.DB.First(&role, foundUser.RoleID)
+			result = database.DB.First(&role, foundUser.RoleID)
+			if result.Error != nil {
+				RespondWithJSON(w, http.StatusUnauthorized, APIResponse{Message: "Unauthorized", Data: nil, Status: "error"})
+				return
+			}
 
 			for _, perm := range permissions {
 

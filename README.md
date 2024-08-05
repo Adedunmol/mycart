@@ -45,6 +45,7 @@ git clone https://github.com/Adedunmol/mycart.git
 2. Run `go get` to install all dependencies
 
 ### Running tests
+* Set the `environment` variable in `app.env` to `test`.
 * Run `go test ./... -v` to run unit tests.
 
 

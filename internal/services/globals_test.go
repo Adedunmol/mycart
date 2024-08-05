@@ -58,7 +58,8 @@ func TestMain(m *testing.M) {
 func clearTables() {
 	database.DB.Migrator().DropTable(&models.User{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{}, &models.Otp{})
 
-	database.DB.AutoMigrate(&models.User{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{}, &models.Otp{})
+	database.DB.AutoMigrate(&models.Otp{})
+	database.DB.AutoMigrate(&models.User{}, &models.Review{}, &models.Product{}, &models.Order{}, &models.CartItem{}, &models.Cart{})
 }
 
 func checkResponseCode(t *testing.T, expected, actual int) {
