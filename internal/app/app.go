@@ -20,13 +20,14 @@ var (
 )
 
 func init() {
-	_, err := config.LoadConfig(".")
-	if err != nil {
-		log.Fatal("Error loading .env file: ", err)
-	}
 
 	dbConnOnce.Do(func() {
-		err = database.InitDB()
+		var err error
+		if config.EnvConfig.Environment == "test" {
+			err = database.InitDB(config.EnvConfig.TestDatabaseUrl)
+		} else {
+			err = database.InitDB(config.EnvConfig.DatabaseUrl)
+		}
 
 		if err != nil {
 			log.Panic(err)
