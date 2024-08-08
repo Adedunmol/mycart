@@ -19,7 +19,7 @@ var (
 	Router     *chi.Mux
 )
 
-func init() {
+func Init() {
 
 	dbConnOnce.Do(func() {
 		var err error
@@ -42,6 +42,8 @@ func Run() {
 	// 	RootPath:     "/monitoring", // RootPath specifies the root for asynqmon app
 	// 	RedisConnOpt: asynq.RedisClientOpt{Addr: ":6379"},
 	// })
+
+	Init()
 
 	logger.Logger.Info("setting up routes")
 

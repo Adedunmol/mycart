@@ -26,7 +26,7 @@ import (
 func SendMail(to string, subject string, html string, plain string) {
 	m := gomail.NewMessage()
 
-	m.SetHeader("From", config.EnvConfig.EmailUsername)
+	m.SetHeader("From", config.EnvConfig.EmailSender)
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
 
@@ -41,7 +41,6 @@ func SendMail(to string, subject string, html string, plain string) {
 }
 
 func SendMailWithTemplate(templateFile string, to string, subject string, locals interface{}, attachment string) {
-	fmt.Println(to)
 	m := gomail.NewMessage()
 
 	m.SetHeader("From", config.EnvConfig.EmailUsername)
@@ -114,11 +113,13 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 		m.Attach(attachment)
 	}
 
-	d := gomail.NewDialer("sandbox.smtp.mailtrap.io", 587, config.EnvConfig.EmailUsername, config.EnvConfig.EmailPassword)
+	d := gomail.NewDialer("sandbox.smtp.mailtrap.io", 2525, config.EnvConfig.EmailUsername, config.EnvConfig.EmailPassword)
 	d.TLSConfig = &tls.Config{InsecureSkipVerify: true}
 
 	if err := d.DialAndSend(m); err != nil {
 		logger.Logger.Error(err.Error())
 		logger.Logger.Error("could not send mail")
 	}
+
+	logger.Logger.Info("email sent to " + to)
 }

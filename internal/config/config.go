@@ -14,6 +14,7 @@ type Config struct {
 	Environment     string `mapstructure:"ENVIRONMENT"`
 	SecretKey       string `mapstructure:"SECRET_KEY"`
 	EmailUsername   string `mapstructure:"EMAIL_USERNAME"`
+	EmailSender     string `mapstructure:"EMAIL_SENDER"`
 	EmailPassword   string `mapstructure:"EMAIL_PASSWORD"`
 }
 
