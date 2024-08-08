@@ -43,7 +43,7 @@ func SendMail(to string, subject string, html string, plain string) {
 func SendMailWithTemplate(templateFile string, to string, subject string, locals interface{}, attachment string) {
 	m := gomail.NewMessage()
 
-	m.SetHeader("From", config.EnvConfig.EmailUsername)
+	m.SetHeader("From", config.EnvConfig.EmailSender)
 	m.SetHeader("To", to)
 	m.SetHeader("Subject", subject)
 
@@ -58,21 +58,21 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 		pathToHtmlFile := filepath.Join(currentDirectory, "internal", "email-templates", "verification", "verification.html")
 		if _, err := os.Stat(pathToHtmlFile); err == nil {
 			// path/to/whatever exists
-			fmt.Println("file does exist")
+			fmt.Println("html file does exist")
 			html = htmlTemplate.Must(htmlTemplate.ParseFiles(pathToHtmlFile))
 		} else if errors.Is(err, os.ErrNotExist) {
 			// path/to/whatever does *not* exist
-			logger.Logger.Error("file does not exist")
+			logger.Logger.Error("html file does not exist")
 			return
 		}
 
 		pathToTextFile := filepath.Join(currentDirectory, "internal", "email-templates", "verification", "verification.txt")
 		if _, err := os.Stat(pathToTextFile); err == nil {
 			// path/to/whatever exists
-			fmt.Println("file does exist")
+			fmt.Println("text file does exist")
 			text = textTemplate.Must(textTemplate.ParseFiles(pathToTextFile))
 		} else if errors.Is(err, os.ErrNotExist) {
-			logger.Logger.Error("file does not exist")
+			logger.Logger.Error("text file does not exist")
 			return
 		}
 
@@ -80,34 +80,34 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 		pathToHtmlFile := filepath.Join(currentDirectory, "internal", "email-templates", "purchase", "purchase.html")
 		if _, err := os.Stat(pathToHtmlFile); err == nil {
 			// path/to/whatever exists
-			fmt.Println("file does exist")
+			fmt.Println("html file does exist")
 			html = htmlTemplate.Must(htmlTemplate.ParseFiles(pathToHtmlFile))
 		} else if errors.Is(err, os.ErrNotExist) {
 			// path/to/whatever does *not* exist
-			logger.Logger.Error("file does not exist")
+			logger.Logger.Error("html file does not exist")
 			return
 		}
 
 		pathToTextFile := filepath.Join(currentDirectory, "internal", "email-templates", "purchase", "purchase.txt")
 		if _, err := os.Stat(pathToTextFile); err == nil {
 			// path/to/whatever exists
-			fmt.Println("file does exist")
+			fmt.Println("text file does exist")
 			html = htmlTemplate.Must(htmlTemplate.ParseFiles(pathToHtmlFile))
 		} else if errors.Is(err, os.ErrNotExist) {
 			// path/to/whatever does *not* exist
-			logger.Logger.Error("file does not exist")
+			logger.Logger.Error("text file does not exist")
 			return
 		}
 	}
+	textBuff := new(bytes.Buffer)
+	text.Execute(textBuff, locals)
+
+	m.AddAlternative("text/plain", textBuff.String())
 
 	htmlBuff := new(bytes.Buffer)
 	html.Execute(htmlBuff, locals)
 
-	textBuff := new(bytes.Buffer)
-	text.Execute(htmlBuff, locals)
-
 	m.SetBody("text/html", htmlBuff.String())
-	m.SetBody("text/plain", textBuff.String())
 
 	if attachment != "" {
 		m.Attach(attachment)
