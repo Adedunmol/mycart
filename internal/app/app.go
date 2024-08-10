@@ -58,7 +58,18 @@ func Run() {
 		util.RespondWithJSON(w, http.StatusOK, "Hello, world")
 	})
 
+	fs := http.FileServer(http.Dir("../../docs"))
+	Router.Handle("/api-docs/", http.StripPrefix("/api-docs/", fs))
+
 	routes.SetupRoutes(Router)
 
-	http.ListenAndServe(":5000", Router)
+	var addr string
+
+	if config.EnvConfig.Port == "" {
+		addr = ":5000"
+	} else {
+		addr = ":" + config.EnvConfig.Port
+	}
+
+	http.ListenAndServe(addr, Router)
 }
