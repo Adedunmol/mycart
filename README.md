@@ -54,6 +54,7 @@ git clone https://github.com/Adedunmol/mycart.git
 2. Create a new file by copying & pasting the file on the root directory & rename it to just `app.env`
 3. The `app.env` file is already ignored, so your credentials inside it won't be committed
 4. Change the values of the file. Make changes of comment to the `app.env.example` file while adding new constants to the `app.env` file.
+5. Setup Redis on docker or locally
 
 ### Usage
 * Run `air` to start the application.
