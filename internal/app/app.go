@@ -3,6 +3,8 @@ package app
 import (
 	"log"
 	"net/http"
+	"os"
+	"path/filepath"
 	"sync"
 
 	"github.com/Adedunmol/mycart/internal/config"
@@ -58,8 +60,11 @@ func Run() {
 		util.RespondWithJSON(w, http.StatusOK, "Hello, world")
 	})
 
-	fs := http.FileServer(http.Dir("../../docs"))
-	Router.Handle("/api-docs/", http.StripPrefix("/api-docs/", fs))
+	currentDirectory, _ := os.Getwd()
+	pathToDocFile := filepath.Join(currentDirectory, "docs")
+
+	fs := http.FileServer(http.Dir(pathToDocFile))
+	Router.Handle("/docs/*", http.StripPrefix("/docs/", fs))
 
 	routes.SetupRoutes(Router)
 
@@ -71,5 +76,6 @@ func Run() {
 		addr = ":" + config.EnvConfig.Port
 	}
 
+	logger.Logger.Info("server is running on port " + addr)
 	http.ListenAndServe(addr, Router)
 }

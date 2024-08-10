@@ -1,389 +1,372 @@
 {
+	"openapi": "3.0.0",
 	"info": {
-		"_postman_id": "68ec4128-04d4-483d-9107-4f2308c80d97",
-		"name": "mycart",
-		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "15850090"
+	  "title": "mycart",
+	  "version": "1.0.0"
 	},
-	"item": [
-		{
-			"name": "User",
-			"item": [
-				{
-					"name": "Login User",
-					"event": [
-						{
-							"listen": "test",
-							"script": {
-								"exec": [
-									""
-								],
-								"type": "text/javascript"
-							}
-						}
-					],
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"email\": \"ade@gmail.com\",\r\n    \"username\": \"adedunmola.szn\",\r\n    \"password\": \"password\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:5000/users/login",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "5000",
-							"path": [
-								"users",
-								"login"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Register User",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"first_name\": \"ade\",\r\n    \"last_name\": \"ade\",\r\n    \"email\": \"ade@gmail.com\",\r\n    \"username\": \"adedunmola.szn\",\r\n    \"password\": \"password\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:5000/users/register",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "5000",
-							"path": [
-								"users",
-								"register"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Verify User",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"user_id\": 28,\r\n    \"otp\": \"9514\"\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:5000/users/verify",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "5000",
-							"path": [
-								"users",
-								"verify"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Logout User",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:5000/users/logout",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "5000",
-							"path": [
-								"users",
-								"logout"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get New Access Token",
-					"request": {
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:5000/users/refresh",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "5000",
-							"path": [
-								"users",
-								"refresh"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Product",
-			"item": [
-				{
-					"name": "Create New Product",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMyODY2NzcsImlhdCI6IjIwMjQtMDgtMTBUMTE6Mjk6MzcuNTk4MTg3OSswMTowMCIsInVzZXJuYW1lIjoidGVzdF91c2VybmFtZSJ9.9fIpIH6ruvZSheyqyv4sa_CcuMtRKNW8-CBX2NN6aCQ",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"name\": \"canon cam 450s pro\",\r\n    \"details\": \"best canon cam in the market yet\",\r\n    \"price\": 40,\r\n    \"category\": \"gadget\",\r\n    \"quantity\": 100\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:5000/products",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "5000",
-							"path": [
-								"products"
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get All Products",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMyODg5NDksImlhdCI6IjIwMjQtMDgtMTBUMTI6MDc6MjkuNDQwNzYzMiswMTowMCIsInVzZXJuYW1lIjoidGVzdF91c2VybmFtZSJ9.CYh_LnciP2fZL5bVzOlQwLUT12V8-jqGe9GDtcIyRFo",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:5000/products/?category=gadget&min_price=40&sort_by=price-desc",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "5000",
-							"path": [
-								"products",
-								""
-							],
-							"query": [
-								{
-									"key": "category",
-									"value": "gadget"
-								},
-								{
-									"key": "min_price",
-									"value": "40"
-								},
-								{
-									"key": "sort_by",
-									"value": "price-desc"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Cart",
-			"item": [
-				{
-					"name": "Add Item to Cart",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMyODg5NDksImlhdCI6IjIwMjQtMDgtMTBUMTI6MDc6MjkuNDQwNzYzMiswMTowMCIsInVzZXJuYW1lIjoidGVzdF91c2VybmFtZSJ9.CYh_LnciP2fZL5bVzOlQwLUT12V8-jqGe9GDtcIyRFo",
-									"type": "string"
-								}
-							]
-						},
-						"method": "POST",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:5000/carts/add-item?product_id=1&quantity=1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "5000",
-							"path": [
-								"carts",
-								"add-item"
-							],
-							"query": [
-								{
-									"key": "product_id",
-									"value": "1"
-								},
-								{
-									"key": "quantity",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				},
-				{
-					"name": "Get Cart",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMyODY2NzcsImlhdCI6IjIwMjQtMDgtMTBUMTE6Mjk6MzcuNTk4MTg3OSswMTowMCIsInVzZXJuYW1lIjoidGVzdF91c2VybmFtZSJ9.9fIpIH6ruvZSheyqyv4sa_CcuMtRKNW8-CBX2NN6aCQ",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:5000/carts/",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "5000",
-							"path": [
-								"carts",
-								""
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Vendor",
-			"item": [
-				{
-					"name": "Vendors Registration",
-					"request": {
-						"method": "POST",
-						"header": [],
-						"body": {
-							"mode": "raw",
-							"raw": "{\r\n    \"first_name\": \"some_user\",\r\n    \"last_name\": \"test_user\",\r\n    \"username\": \"test_username\",\r\n    \"email\": \"test@gmail.com\",\r\n    \"password\": \"123456789\"\r\n\r\n}",
-							"options": {
-								"raw": {
-									"language": "json"
-								}
-							}
-						},
-						"url": {
-							"raw": "http://localhost:5000/vendors/register",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "5000",
-							"path": [
-								"vendors",
-								"register"
-							]
-						}
-					},
-					"response": []
-				}
-			]
-		},
-		{
-			"name": "Order",
-			"item": [
-				{
-					"name": "Create New Order",
-					"request": {
-						"auth": {
-							"type": "bearer",
-							"bearer": [
-								{
-									"key": "token",
-									"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJleHAiOjE3MjMyODk5OTEsImlhdCI6IjIwMjQtMDgtMTBUMTI6MjQ6NTEuNzg3MzAxNyswMTowMCIsInVzZXJuYW1lIjoidGVzdF91c2VybmFtZSJ9.cTljYMgsg62SDJeJmpKd0RCMtY9ctjXo5G0khyXYXnc",
-									"type": "string"
-								}
-							]
-						},
-						"method": "GET",
-						"header": [],
-						"url": {
-							"raw": "http://localhost:5000/orders?cart_id=1",
-							"protocol": "http",
-							"host": [
-								"localhost"
-							],
-							"port": "5000",
-							"path": [
-								"orders"
-							],
-							"query": [
-								{
-									"key": "cart_id",
-									"value": "1"
-								}
-							]
-						}
-					},
-					"response": []
-				}
-			]
+	"servers": [
+	  {
+		"url": "http://localhost:5000"
+	  }
+	],
+	"components": {
+	  "securitySchemes": {
+		"bearerAuth": {
+		  "type": "http",
+		  "scheme": "bearer"
 		}
-	]
-}
+	  }
+	},
+	"tags": [
+	  {
+		"name": "User"
+	  },
+	  {
+		"name": "Product"
+	  },
+	  {
+		"name": "Cart"
+	  },
+	  {
+		"name": "Vendor"
+	  },
+	  {
+		"name": "Order"
+	  }
+	],
+	"paths": {
+	  "/users/login": {
+		"post": {
+		  "tags": [
+			"User"
+		  ],
+		  "summary": "Login User",
+		  "requestBody": {
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "type": "object",
+				  "example": {
+					"email": "ade@gmail.com",
+					"username": "adedunmola.szn",
+					"password": "password"
+				  }
+				}
+			  }
+			}
+		  },
+		  "responses": {
+			"200": {
+			  "description": "Successful response",
+			  "content": {
+				"application/json": {}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/users/register": {
+		"post": {
+		  "tags": [
+			"User"
+		  ],
+		  "summary": "Register User",
+		  "requestBody": {
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "type": "object",
+				  "example": {
+					"first_name": "ade",
+					"last_name": "ade",
+					"email": "oyewaleadedunmola@gmail.com",
+					"username": "adedunmola.szn",
+					"password": "password"
+				  }
+				}
+			  }
+			}
+		  },
+		  "responses": {
+			"200": {
+			  "description": "Successful response",
+			  "content": {
+				"application/json": {}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/users/verify": {
+		"post": {
+		  "tags": [
+			"User"
+		  ],
+		  "summary": "Verify User",
+		  "requestBody": {
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "type": "object",
+				  "example": {
+					"user_id": 28,
+					"otp": "9514"
+				  }
+				}
+			  }
+			}
+		  },
+		  "responses": {
+			"200": {
+			  "description": "Successful response",
+			  "content": {
+				"application/json": {}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/users/logout": {
+		"get": {
+		  "tags": [
+			"User"
+		  ],
+		  "summary": "Logout User",
+		  "responses": {
+			"200": {
+			  "description": "Successful response",
+			  "content": {
+				"application/json": {}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/users/refresh": {
+		"get": {
+		  "tags": [
+			"User"
+		  ],
+		  "summary": "Get New Access Token",
+		  "responses": {
+			"200": {
+			  "description": "Successful response",
+			  "content": {
+				"application/json": {}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/products": {
+		"post": {
+		  "tags": [
+			"Product"
+		  ],
+		  "summary": "Create New Product",
+		  "requestBody": {
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "type": "object",
+				  "example": {
+					"name": "canon cam 450s pro",
+					"details": "best canon cam in the market yet",
+					"price": 40,
+					"category": "gadget",
+					"quantity": 100
+				  }
+				}
+			  }
+			}
+		  },
+		  "security": [
+			{
+			  "bearerAuth": []
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "Successful response",
+			  "content": {
+				"application/json": {}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/products/": {
+		"get": {
+		  "tags": [
+			"Product"
+		  ],
+		  "summary": "Get All Products",
+		  "security": [
+			{
+			  "bearerAuth": []
+			}
+		  ],
+		  "parameters": [
+			{
+			  "name": "category",
+			  "in": "query",
+			  "schema": {
+				"type": "string"
+			  },
+			  "example": "gadget"
+			},
+			{
+			  "name": "min_price",
+			  "in": "query",
+			  "schema": {
+				"type": "integer"
+			  },
+			  "example": "40"
+			},
+			{
+			  "name": "sort_by",
+			  "in": "query",
+			  "schema": {
+				"type": "string"
+			  },
+			  "example": "price-desc"
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "Successful response",
+			  "content": {
+				"application/json": {}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/carts/add-item": {
+		"post": {
+		  "tags": [
+			"Cart"
+		  ],
+		  "summary": "Add Item to Cart",
+		  "requestBody": {
+			"content": {}
+		  },
+		  "security": [
+			{
+			  "bearerAuth": []
+			}
+		  ],
+		  "parameters": [
+			{
+			  "name": "product_id",
+			  "in": "query",
+			  "schema": {
+				"type": "integer"
+			  },
+			  "example": "1"
+			},
+			{
+			  "name": "quantity",
+			  "in": "query",
+			  "schema": {
+				"type": "integer"
+			  },
+			  "example": "1"
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "Successful response",
+			  "content": {
+				"application/json": {}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/carts/": {
+		"get": {
+		  "tags": [
+			"Cart"
+		  ],
+		  "summary": "Get Cart",
+		  "security": [
+			{
+			  "bearerAuth": []
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "Successful response",
+			  "content": {
+				"application/json": {}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/vendors/register": {
+		"post": {
+		  "tags": [
+			"Vendor"
+		  ],
+		  "summary": "Vendors Registration",
+		  "requestBody": {
+			"content": {
+			  "application/json": {
+				"schema": {
+				  "type": "object",
+				  "example": {
+					"first_name": "some_user",
+					"last_name": "test_user",
+					"username": "test_username",
+					"email": "dumex672@gmail.com",
+					"password": "123456789"
+				  }
+				}
+			  }
+			}
+		  },
+		  "responses": {
+			"200": {
+			  "description": "Successful response",
+			  "content": {
+				"application/json": {}
+			  }
+			}
+		  }
+		}
+	  },
+	  "/orders": {
+		"get": {
+		  "tags": [
+			"Order"
+		  ],
+		  "summary": "Create New Order",
+		  "security": [
+			{
+			  "bearerAuth": []
+			}
+		  ],
+		  "parameters": [
+			{
+			  "name": "cart_id",
+			  "in": "query",
+			  "schema": {
+				"type": "integer"
+			  },
+			  "example": "1"
+			}
+		  ],
+		  "responses": {
+			"200": {
+			  "description": "Successful response",
+			  "content": {
+				"application/json": {}
+			  }
+			}
+		  }
+		}
+	  }
+	}
+  }
