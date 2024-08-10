@@ -208,7 +208,7 @@ func WriteCartToDB(userId int) error {
 	cartItems := GetCart(userId)
 
 	for _, item := range cartItems {
-
+		fmt.Println(item)
 		if int(item.Count) < 1 {
 			return errors.New("quantity can't be less than 1")
 		}
@@ -230,7 +230,7 @@ func WriteCartToDB(userId int) error {
 
 		if result.Error != nil {
 			fmt.Println(result.Error)
-			return errors.New("product not found")
+			return errors.New("product not found in cart")
 		}
 
 		if uint64(item.Count) > uint64(product.Quantity) {

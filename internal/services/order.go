@@ -1,6 +1,7 @@
 package services
 
 import (
+	"errors"
 	"fmt"
 	"net/http"
 
@@ -10,6 +11,7 @@ import (
 	"github.com/Adedunmol/mycart/internal/redis"
 	"github.com/Adedunmol/mycart/internal/tasks"
 	"github.com/Adedunmol/mycart/internal/util"
+	"gorm.io/gorm"
 )
 
 func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
@@ -29,10 +31,29 @@ func CreateOrderHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	var cart models.Cart
+
+	result = database.DB.Where(models.Cart{BuyerID: foundUser.ID}).First(&cart)
+
+	if result.Error != nil && errors.Is(result.Error, gorm.ErrRecordNotFound) {
+		cart := models.Cart{
+			BuyerID:    foundUser.ID,
+			TotalPrice: 0,
+		}
+
+		result = database.DB.Create(&cart)
+
+		if result.Error != nil {
+			util.RespondWithJSON(w, http.StatusInternalServerError, APIResponse{Message: "unable to create cart for order", Data: nil, Status: "error"})
+			return
+		}
+	}
+
 	updatedCart := redis.GetCart(int(foundUser.ID))
 	err := redis.WriteCartToDB(int(foundUser.ID))
 
 	if err != nil {
+		fmt.Println("while updating cart")
 		logger.Logger.Error(err.Error())
 		util.RespondWithJSON(w, http.StatusBadRequest, APIResponse{Message: "error updating cart", Data: nil, Status: "error"})
 		return

@@ -54,7 +54,7 @@ func HandleInvoiceGenerationTask(ctx context.Context, t *asynq.Task) error {
 
 	var cart models.Cart
 
-	result = database.DB.First(&cart, p.CartID)
+	result = database.DB.Preload("CartItems").Where(models.Cart{BuyerID: uint(p.CartID)}).First(&cart)
 
 	if result.Error != nil {
 		message := fmt.Sprintf("no cart found with this id: %d", p.CartID)
@@ -64,14 +64,16 @@ func HandleInvoiceGenerationTask(ctx context.Context, t *asynq.Task) error {
 
 	// generate receipt
 	filePath, err := util.GeneratePdf(cart, user)
+	fmt.Println("file path: ", filePath)
 	if err != nil {
+		fmt.Println(err)
 		message := fmt.Sprintf("error generating receipt for this id: %d", p.CartID)
 		log.Println(message)
 		return errors.New(message)
 	}
 
 	// send receipt to user
-	util.SendMailWithTemplate("purchase", user.Email, "Successful purchase", struct{}{}, filePath)
+	util.SendMailWithTemplate("purchase", user.Email, "Successful purchase", struct{ Username string }{Username: user.Username}, filePath)
 
 	// clear user cart from redis and postgres
 	redis.ClearCartAndDB(int(p.UserID))

@@ -44,7 +44,7 @@ func GeneratePdf(cart models.Cart, user models.User) (string, error) {
 	doc.SetRef("random")
 	doc.SetVersion("1.0")
 
-	doc.SetDescription(fmt.Sprintf("A description"))
+	doc.SetDescription(("A description"))
 	doc.SetDate(fmt.Sprintf("%d/%d/%d", time.Now().Day(), time.Now().Month(), time.Now().Year()))
 
 	doc.SetCompany(&generator.Contact{
@@ -94,9 +94,9 @@ func GeneratePdf(cart models.Cart, user models.User) (string, error) {
 		log.Fatal(err)
 	}
 
-	currentTime := time.Now()
-	userInvoice := fmt.Sprintf("%s-%s.pdf", user.Username, currentTime)
-	filePath := filepath.Join(currentDir, "..", "..", "internal", "order_invoices", userInvoice)
+	currentTime := time.Now().Unix()
+	userInvoice := fmt.Sprintf("%s-%d.pdf", user.Username, currentTime)
+	filePath := filepath.Join(currentDir, "internal", "order_invoices", userInvoice)
 
 	err = pdf.OutputFileAndClose(filePath)
 

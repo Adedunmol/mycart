@@ -92,7 +92,7 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 		if _, err := os.Stat(pathToTextFile); err == nil {
 			// path/to/whatever exists
 			fmt.Println("text file does exist")
-			html = htmlTemplate.Must(htmlTemplate.ParseFiles(pathToHtmlFile))
+			text = textTemplate.Must(textTemplate.ParseFiles(pathToTextFile))
 		} else if errors.Is(err, os.ErrNotExist) {
 			// path/to/whatever does *not* exist
 			logger.Logger.Error("text file does not exist")
@@ -110,6 +110,8 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 	m.SetBody("text/html", htmlBuff.String())
 
 	if attachment != "" {
+		logger.Logger.Info("attaching file: ")
+		logger.Logger.Info(attachment)
 		m.Attach(attachment)
 	}
 
@@ -118,7 +120,7 @@ func SendMailWithTemplate(templateFile string, to string, subject string, locals
 
 	if err := d.DialAndSend(m); err != nil {
 		logger.Logger.Error(err.Error())
-		logger.Logger.Error("could not send mail")
+		logger.Logger.Error("could not send mail to " + to)
 	}
 
 	logger.Logger.Info("email sent to " + to)

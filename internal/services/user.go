@@ -356,7 +356,7 @@ func VerifyUserHandler(w http.ResponseWriter, r *http.Request) {
 
 	var otp models.Otp
 
-	result := database.DB.First(&otp, data.UserId)
+	result := database.DB.Where(models.Otp{User: data.UserId}).First(&otp)
 
 	if result.Error != nil {
 		util.RespondWithJSON(w, http.StatusBadRequest, util.APIResponse{Message: "Account record doesn't exist or has been verified already. Please sign up or log in.", Data: nil, Status: "error"})

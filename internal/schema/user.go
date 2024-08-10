@@ -77,7 +77,7 @@ func (u *LoginUser) Valid(ctx context.Context) (problems map[string]string) {
 }
 
 type VerifyUserSchema struct {
-	UserId string `json:"user_id" validate:"required"`
+	UserId uint   `json:"user_id" validate:"required"`
 	Otp    string `json:"otp" validate:"required"`
 }
 
