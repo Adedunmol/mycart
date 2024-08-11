@@ -18,10 +18,18 @@ var (
 
 func Init(redisAddress string) error {
 	var err error
+	addr, err := redis.ParseURL(redisAddress)
+
+	if err != nil {
+		logger.Logger.Error("error parsing redis url")
+		logger.Logger.Error(err.Error())
+		return err
+	}
+
 	once.Do(func() {
 		logger.Logger.Info("setting up connection to redis")
 		redisClient = redis.NewClient(&redis.Options{
-			Addr:     redisAddress,
+			Addr:     addr.Addr, //redisAddress,
 			Password: "",
 			DB:       0,
 		})
