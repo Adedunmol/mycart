@@ -63,7 +63,7 @@ func Run() {
 	currentDirectory, _ := os.Getwd()
 	pathToDocFile := filepath.Join(currentDirectory, "docs")
 
-	fs := http.FileServer(http.Dir(pathToDocFile))
+	fs := http.FileServer(http.Dir(pathToDocFile)) // https://ribice.medium.com/serve-swaggerui-within-your-golang-application-5486748a5ed4
 	Router.Handle("/docs/*", http.StripPrefix("/docs/", fs))
 
 	routes.SetupRoutes(Router)

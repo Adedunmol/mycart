@@ -17,6 +17,7 @@ type Config struct {
 	EmailSender     string `mapstructure:"EMAIL_SENDER"`
 	EmailPassword   string `mapstructure:"EMAIL_PASSWORD"`
 	Port            string `mapstructure:"PORT"`
+	RedisAddress    string `mapstructure:"REDIS_ADDRESS"`
 }
 
 func LoadConfig(path string) (Config, error) {

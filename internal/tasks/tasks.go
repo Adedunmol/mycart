@@ -4,6 +4,7 @@ import (
 	"log"
 	"sync"
 
+	"github.com/Adedunmol/mycart/internal/config"
 	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/hibiken/asynq"
 )
@@ -13,11 +14,9 @@ var (
 	once   sync.Once
 )
 
-const redisAddr = "127.0.0.1:6379"
-
 func Run() {
 	srv := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: redisAddr},
+		asynq.RedisClientOpt{Addr: config.EnvConfig.RedisAddress},
 		asynq.Config{
 			// Specify how many concurrent workers to use
 			Concurrency: 10,
