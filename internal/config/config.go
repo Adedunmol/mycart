@@ -20,12 +20,9 @@ type Config struct {
 	RedisAddress    string `mapstructure:"REDIS_ADDRESS"`
 }
 
-func LoadConfig(path string) (Config, error) {
-	// var envConfig Config
+func LoadConfig() (Config, error) {
 
-	viper.AddConfigPath(path)
-	viper.SetConfigName("app")
-	viper.SetConfigType("env")
+	viper.SetConfigFile(".env")
 
 	viper.AutomaticEnv()
 

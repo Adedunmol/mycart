@@ -45,15 +45,15 @@ git clone https://github.com/Adedunmol/mycart.git
 2. Run `go get` to install all dependencies
 
 ### Running tests
-* Set the `environment` variable in `app.env` to `test`.
+* Set the `environment` variable in `.env` to `test`.
 * Run `go test ./... -v` to run unit tests.
 
 
 ### Setting up environments
-1. There is a file named `app.env.example` on the root directory of the project
-2. Create a new file by copying & pasting the file on the root directory & rename it to just `app.env`
-3. The `app.env` file is already ignored, so your credentials inside it won't be committed
-4. Change the values of the file. Make changes of comment to the `app.env.example` file while adding new constants to the `app.env` file.
+1. There is a file named `.env.example` on the root directory of the project
+2. Create a new file by copying & pasting the file on the root directory & rename it to just `.env`
+3. The `.env` file is already ignored, so your credentials inside it won't be committed
+4. Change the values of the file. Make changes of comment to the `.env.example` file while adding new constants to the `.env` file.
 5. Setup Redis on docker or locally
 
 ### Usage

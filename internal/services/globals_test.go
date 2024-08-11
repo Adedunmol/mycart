@@ -34,7 +34,7 @@ const redisAddress = "127.0.0.1:6379"
 var router *chi.Mux
 
 func TestMain(m *testing.M) {
-	_, err := config.LoadConfig(".")
+	_, err := config.LoadConfig()
 	if err != nil {
 		log.Fatal("Error loading .env file: ", err)
 	}
