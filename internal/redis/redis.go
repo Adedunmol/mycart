@@ -2,7 +2,6 @@ package redis
 
 import (
 	"context"
-	"crypto/tls"
 	"fmt"
 	"strconv"
 	"strings"
@@ -30,10 +29,10 @@ func Init(redisAddress string) error {
 	once.Do(func() {
 		logger.Logger.Info("setting up connection to redis")
 		redisClient = redis.NewClient(&redis.Options{
-			Addr:      addr.Addr, //redisAddress,
-			Password:  addr.Password,
-			DB:        0,
-			TLSConfig: &tls.Config{InsecureSkipVerify: true},
+			Addr:     addr.Addr, //redisAddress,
+			Password: addr.Password,
+			DB:       0,
+			// TLSConfig: &tls.Config{InsecureSkipVerify: true},
 		})
 
 		_, err = redisClient.Do(context.Background(), "CONFIG", "SET", "notify-keyspace-events", "KEA").Result()
