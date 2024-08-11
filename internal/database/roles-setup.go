@@ -47,7 +47,7 @@ func InsertRoles() {
 
 		role.Default = (role.Name == default_role)
 
-		DB.Save(role)
+		DB.Save(&role)
 	}
 
 	fmt.Println(roles, default_role)
