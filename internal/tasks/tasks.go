@@ -7,6 +7,7 @@ import (
 	"github.com/Adedunmol/mycart/internal/config"
 	"github.com/Adedunmol/mycart/internal/logger"
 	"github.com/hibiken/asynq"
+	"github.com/redis/go-redis/v9"
 )
 
 var (
@@ -15,8 +16,15 @@ var (
 )
 
 func Run() {
+	addr, err := redis.ParseURL(config.EnvConfig.RedisAddress)
+
+	if err != nil {
+		logger.Logger.Error("error parsing redis asynq url")
+		logger.Logger.Error(err.Error())
+		return
+	}
 	srv := asynq.NewServer(
-		asynq.RedisClientOpt{Addr: config.EnvConfig.RedisAddress},
+		asynq.RedisClientOpt{Addr: addr.Addr},
 		asynq.Config{
 			// Specify how many concurrent workers to use
 			Concurrency: 10,
@@ -41,10 +49,18 @@ func Run() {
 }
 
 func Init(redisAddress string) {
+	addr, err := redis.ParseURL(config.EnvConfig.RedisAddress)
+
+	if err != nil {
+		logger.Logger.Error("error parsing redis asynq url")
+		logger.Logger.Error(err.Error())
+		return
+	}
+
 	once.Do(func() {
 		logger.Logger.Info("setting up connection for asynq queue")
 
-		client = asynq.NewClient(asynq.RedisClientOpt{Addr: redisAddress, Password: "", DB: 0})
+		client = asynq.NewClient(asynq.RedisClientOpt{Addr: addr.Addr, Password: "", DB: 0})
 
 	})
 }
