@@ -30,7 +30,7 @@ func Init(redisAddress string) error {
 		logger.Logger.Info("setting up connection to redis")
 		redisClient = redis.NewClient(&redis.Options{
 			Addr:     addr.Addr, //redisAddress,
-			Password: "",
+			Password: addr.Password,
 			DB:       0,
 		})
 
